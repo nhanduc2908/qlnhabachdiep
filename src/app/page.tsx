@@ -385,19 +385,21 @@ export default function Home() {
             <section>
               <h2 className="text-xl font-semibold mb-4">Tính lương theo %gói</h2>
               <div className="bg-neutral-800 p-4 rounded-lg mb-4">
-                <label className="block mb-2">Doanh thu tháng</label>
+                <label className="block mb-2">Tổng doanh thu tháng</label>
                 <input type="number" value={revenue} onChange={(e) => setRevenue(Number(e.target.value))} className="bg-neutral-700 px-3 py-2 rounded-lg w-full md:w-64" />
-                <p className="text-neutral-400 text-sm mt-1">Doanh thu: {revenue.toLocaleString("vi-VN")}đ</p>
+                <p className="text-emerald-400 text-lg mt-1">Doanh thu: {revenue.toLocaleString("vi-VN")}đ</p>
+                <p className="text-neutral-400 text-sm">Công thức: Lương = Doanh thu × %gói</p>
               </div>
               <div className="bg-neutral-800 rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Gói %</th><th className="px-3 py-2 text-left">Chức vụ</th><th className="px-3 py-2 text-right">Lương (=Doanh thu ×%)</th></tr>
+                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Gói %</th><th className="px-3 py-2 text-left">Doanh thu</th><th className="px-3 py-2 text-right">Lương (=DT × %)</th></tr>
                   </thead>
                   <tbody>
                     {employees.map(emp => {
                       const pkg = packages.find(p => p.id === selectedEmployeePackages.get(emp.id));
-                      const salary = revenue * ((pkg?.percentage || 0) / 100);
+                      const percent = pkg?.percentage || 0;
+                      const salary = revenue * (percent / 100);
                       return (
                         <tr key={emp.id} className="border-t border-neutral-700">
                           <td className="px-3 py-2">{emp.name}</td>
@@ -407,11 +409,21 @@ export default function Home() {
                               {packages.map(p => <option key={p.id} value={p.id}>{p.percentage}% - {p.name}</option>)}
                             </select>
                           </td>
-                          <td className="px-3 py-2">{emp.position}</td>
+                          <td className="px-3 py-2 text-neutral-400">{revenue.toLocaleString("vi-VN")}đ × {percent}%</td>
                           <td className="px-3 py-2 text-right font-semibold text-emerald-400">{salary.toLocaleString("vi-VN")}đ</td>
                         </tr>
                       );
                     })}
+                    <tr className="border-t border-neutral-600 bg-neutral-700">
+                      <td className="px-3 py-2 font-semibold" colSpan={2}>Tổng</td>
+                      <td className="px-3 py-2 text-right"></td>
+                      <td className="px-3 py-2 text-right font-bold text-emerald-400">
+                        {employees.reduce((sum, emp) => {
+                          const pkg = packages.find(p => p.id === selectedEmployeePackages.get(emp.id));
+                          return sum + (revenue * ((pkg?.percentage || 0) / 100));
+                        }, 0).toLocaleString("vi-VN")}đ
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>

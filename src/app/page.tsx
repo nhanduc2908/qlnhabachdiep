@@ -10,7 +10,6 @@ interface Employee {
   position: string;
   phone: string;
   startDate: string;
-  baseSalary: number;
   status: string;
   department: string;
   contractType: string;
@@ -41,12 +40,12 @@ interface FinanceRecord {
 }
 
 const mockEmployees: Employee[] = [
-  { id: 1, name: "Nguyễn Văn A", position: "Thầy Tarot", phone: "0912345678", startDate: "2024-01-15", baseSalary: 12000000, status: "active", department: "Tarot", contractType: "HĐLĐ" },
-  { id: 2, name: "Trần Thị B", position: "Thầy phong thủy", phone: "0912345679", startDate: "2024-03-01", baseSalary: 10000000, status: "active", department: "Phong Thủy", contractType: "HĐLĐ" },
-  { id: 3, name: "Lê Văn C", position: "Thầy xem bói", phone: "0912345680", startDate: "2024-02-10", baseSalary: 9000000, status: "active", department: "Bói Toán", contractType: "HĐLĐ" },
-  { id: 4, name: "Phạm Thị D", position: "Cô phù thủy", phone: "0912345681", startDate: "2024-04-01", baseSalary: 8500000, status: "active", department: "Xăm Bùa", contractType: "HĐLĐ" },
-  { id: 5, name: "Nguyễn Văn E", position: "Nhân viên lễ tân", phone: "0912345682", startDate: "2024-05-01", baseSalary: 5000000, status: "active", department: "Lễ Tân", contractType: "Thử việc" },
-  { id: 6, name: "Hoàng Thị F", position: "Hướng dẫn viên", phone: "0912345683", startDate: "2024-06-01", baseSalary: 6000000, status: "active", department: "Hướng Dẫn", contractType: "HĐLĐ" },
+  { id: 1, name: "Nguyễn Văn A", position: "Thầy Tarot", phone: "0912345678", startDate: "2024-01-15", status: "active", department: "Tarot", contractType: "HĐLĐ" },
+  { id: 2, name: "Trần Thị B", position: "Thầy phong thủy", phone: "0912345679", startDate: "2024-03-01", status: "active", department: "Phong Thủy", contractType: "HĐLĐ" },
+  { id: 3, name: "Lê Văn C", position: "Thầy xem bói", phone: "0912345680", startDate: "2024-02-10", status: "active", department: "Bói Toán", contractType: "HĐLĐ" },
+  { id: 4, name: "Phạm Thị D", position: "Cô phù thủy", phone: "0912345681", startDate: "2024-04-01", status: "active", department: "Xăm Bùa", contractType: "HĐLĐ" },
+  { id: 5, name: "Nguyễn Văn E", position: "Nhân viên lễ tân", phone: "0912345682", startDate: "2024-05-01", status: "active", department: "Lễ Tân", contractType: "Thử việc" },
+  { id: 6, name: "Hoàng Thị F", position: "Hướng dẫn viên", phone: "0912345683", startDate: "2024-06-01", status: "active", department: "Hướng Dẫn", contractType: "HĐLĐ" },
 ];
 
 const mockPackages: SalaryPackage[] = [
@@ -104,7 +103,7 @@ export default function Home() {
   const [showAttendanceForm, setShowAttendanceForm] = useState(false);
   
   const [newEmployee, setNewEmployee] = useState({
-    name: "", position: "", phone: "", startDate: "", baseSalary: 0, department: "", contractType: "",
+    name: "", position: "", phone: "", startDate: "", department: "", contractType: "",
   });
 
   const [newPackage, setNewPackage] = useState({ name: "", percentage: 0, description: "" });
@@ -113,7 +112,7 @@ export default function Home() {
   const [newAttendance, setNewAttendance] = useState({ employeeId: 0, date: "", checkIn: "", checkOut: "", status: "present" as "present" | "absent" | "late" });
 
   const handleAddEmployee = () => {
-    if (!newEmployee.name || !newEmployee.position || !newEmployee.baseSalary) return;
+    if (!newEmployee.name || !newEmployee.position) return;
     const id = editingId || Math.max(...employees.map(e => e.id), 0) + 1;
     setEmployees(editingId 
       ? employees.map(e => e.id === editingId ? { ...e, ...newEmployee, id: editingId } : e)
@@ -123,7 +122,7 @@ export default function Home() {
   };
 
   const handleEditEmployee = (emp: Employee) => {
-    setNewEmployee({ name: emp.name, position: emp.position, phone: emp.phone, startDate: emp.startDate, baseSalary: emp.baseSalary, department: emp.department, contractType: emp.contractType });
+    setNewEmployee({ name: emp.name, position: emp.position, phone: emp.phone, startDate: emp.startDate, department: emp.department, contractType: emp.contractType });
     setEditingId(emp.id);
     setShowAddForm(true);
   };
@@ -178,7 +177,7 @@ export default function Home() {
   const handleDeleteAttendance = (id: number) => setAttendance(attendance.filter(a => a.id !== id));
 
   const resetForms = () => {
-    setNewEmployee({ name: "", position: "", phone: "", startDate: "", baseSalary: 0, department: "", contractType: "" });
+    setNewEmployee({ name: "", position: "", phone: "", startDate: "", department: "", contractType: "" });
     setEditingId(null);
     setShowAddForm(false);
   };
@@ -249,7 +248,6 @@ export default function Home() {
                     <input type="text" placeholder="Chức vụ" value={newEmployee.position} onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
                     <input type="text" placeholder="Số điện thoại" value={newEmployee.phone} onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
                     <input type="date" value={newEmployee.startDate} onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
-                    <input type="number" placeholder="Lương CB" value={newEmployee.baseSalary || ""} onChange={(e) => setNewEmployee({ ...newEmployee, baseSalary: Number(e.target.value) })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
                     <select value={newEmployee.department} onChange={(e) => setNewEmployee({ ...newEmployee, department: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg">
                       <option value="">Chọn phòng ban</option>
                       {departments.map(d => <option key={d} value={d}>{d}</option>)}
@@ -268,7 +266,7 @@ export default function Home() {
               <div className="bg-neutral-800 rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">Tên</th><th className="px-3 py-2 text-left">Chức vụ</th><th className="px-3 py-2 text-left">Phòng ban</th><th className="px-3 py-2 text-right">Lương CB</th><th className="px-3 py-2 text-center">TT</th><th className="px-3 py-2 text-center">Thao tác</th></tr>
+                    <tr><th className="px-3 py-2 text-left">Tên</th><th className="px-3 py-2 text-left">Chức vụ</th><th className="px-3 py-2 text-left">Phòng ban</th><th className="px-3 py-2 text-left">Ngày vào</th><th className="px-3 py-2 text-center">TT</th><th className="px-3 py-2 text-center">Thao tác</th></tr>
                   </thead>
                   <tbody>
                     {employees.map(emp => (
@@ -276,7 +274,7 @@ export default function Home() {
                         <td className="px-3 py-2">{emp.name}</td>
                         <td className="px-3 py-2">{emp.position}</td>
                         <td className="px-3 py-2">{emp.department}</td>
-                        <td className="px-3 py-2 text-right">{emp.baseSalary.toLocaleString("vi-VN")}đ</td>
+                        <td className="px-3 py-2">{emp.startDate}</td>
                         <td className="px-3 py-2 text-center"><span className="text-green-400 text-xs">Đang hoạt động</span></td>
                         <td className="px-3 py-2 text-center">
                           <button onClick={() => handleEditEmployee(emp)} className="text-blue-400 text-xs mr-2">Sửa</button>
@@ -394,13 +392,12 @@ export default function Home() {
               <div className="bg-neutral-800 rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Gói %</th><th className="px-3 py-2 text-right">Lương CB</th><th className="px-3 py-2 text-right">Phần trăm</th><th className="px-3 py-2 text-right">Tổng</th></tr>
+                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Gói %</th><th className="px-3 py-2 text-left">Chức vụ</th><th className="px-3 py-2 text-right">Lương (=Doanh thu ×%)</th></tr>
                   </thead>
                   <tbody>
                     {employees.map(emp => {
                       const pkg = packages.find(p => p.id === selectedEmployeePackages.get(emp.id));
-                      const pctAmount = revenue * ((pkg?.percentage || 0) / 100);
-                      const total = emp.baseSalary + pctAmount;
+                      const salary = revenue * ((pkg?.percentage || 0) / 100);
                       return (
                         <tr key={emp.id} className="border-t border-neutral-700">
                           <td className="px-3 py-2">{emp.name}</td>
@@ -410,9 +407,8 @@ export default function Home() {
                               {packages.map(p => <option key={p.id} value={p.id}>{p.percentage}% - {p.name}</option>)}
                             </select>
                           </td>
-                          <td className="px-3 py-2 text-right">{emp.baseSalary.toLocaleString("vi-VN")}đ</td>
-                          <td className="px-3 py-2 text-right">{pctAmount.toLocaleString("vi-VN")}đ</td>
-                          <td className="px-3 py-2 text-right font-semibold text-emerald-400">{total.toLocaleString("vi-VN")}đ</td>
+                          <td className="px-3 py-2">{emp.position}</td>
+                          <td className="px-3 py-2 text-right font-semibold text-emerald-400">{salary.toLocaleString("vi-VN")}đ</td>
                         </tr>
                       );
                     })}
@@ -579,7 +575,8 @@ export default function Home() {
                   </thead>
                   <tbody>
                     {employees.map(emp => {
-                      const rating = emp.baseSalary >= 10000000 ? 5 : emp.baseSalary >= 7000000 ? 4 : emp.baseSalary >= 5000000 ? 3 : 2;
+                      const pkg = packages.find(p => p.id === selectedEmployeePackages.get(emp.id));
+                      const rating = pkg ? Math.min(5, Math.floor(pkg.percentage / 3) + 1) : 2;
                       const stars = "⭐".repeat(rating);
                       const notes = rating >= 4 ? "Xuất sắc" : rating >= 3 ? "Hoàn thành tốt" : "Cần cải thiện";
                       return (
@@ -605,9 +602,12 @@ export default function Home() {
                   <div className="text-3xl font-bold text-emerald-400">{employees.length}</div>
                 </div>
                 <div className="bg-neutral-800 p-4 rounded-lg">
-                  <div className="font-semibold mb-2">Tổng quỹ lương</div>
+                  <div className="font-semibold mb-2">Tổng lương (%gói)</div>
                   <div className="text-3xl font-bold text-emerald-400">
-                    {employees.reduce((sum, e) => sum + e.baseSalary, 0).toLocaleString("vi-VN")}đ
+                    {employees.reduce((sum, e) => {
+                      const pkg = packages.find(p => p.id === selectedEmployeePackages.get(e.id));
+                      return sum + (revenue * ((pkg?.percentage || 0) / 100));
+                    }, 0).toLocaleString("vi-VN")}đ
                   </div>
                 </div>
                 <div className="bg-neutral-800 p-4 rounded-lg">
@@ -617,7 +617,10 @@ export default function Home() {
                 <div className="bg-neutral-800 p-4 rounded-lg">
                   <div className="font-semibold mb-2">Lợi nhuận ước tính</div>
                   <div className="text-3xl font-bold text-green-400">
-                    {(revenue - totalExpense - employees.reduce((sum, e) => sum + e.baseSalary, 0)).toLocaleString("vi-VN")}đ
+                    {(revenue - totalExpense - employees.reduce((sum, e) => {
+                      const pkg = packages.find(p => p.id === selectedEmployeePackages.get(e.id));
+                      return sum + (revenue * ((pkg?.percentage || 0) / 100));
+                    }, 0)).toLocaleString("vi-VN")}đ
                   </div>
                 </div>
               </div>

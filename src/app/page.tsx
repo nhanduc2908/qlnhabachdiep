@@ -50,21 +50,22 @@ interface Performance {
 }
 
 const mockEmployees: Employee[] = [
-  { id: 1, name: "Nguyễn Văn A", position: "Quản lý", phone: "0912345678", startDate: "2024-01-15", baseSalary: 8000000, status: "active", department: "Ban điều hành", contractType: "HĐLĐ" },
-  { id: 2, name: "Trần Thị B", position: "Hướng dẫn viên", phone: "0912345679", startDate: "2024-03-01", baseSalary: 5000000, status: "active", department: "Du lịch", contractType: "HĐLĐ" },
-  { id: 3, name: "Lê Văn C", position: "Bảo vệ", phone: "0912345680", startDate: "2024-02-10", baseSalary: 4000000, status: "active", department: "An ninh", contractType: "HĐLĐ" },
-  { id: 4, name: "Phạm Thị D", position: "Lễ tân", phone: "0912345681", startDate: "2024-04-01", baseSalary: 4500000, status: "active", department: "Lễ tân", contractType: "HĐLĐ" },
-  { id: 5, name: "Nguyễn Văn E", position: "Phục vụ", phone: "0912345682", startDate: "2024-05-01", baseSalary: 3800000, status: "active", department: "Nhà hàng", contractType: "Thử việc" },
+  { id: 1, name: "Nguyễn Văn A", position: "Thầy Tarot", phone: "0912345678", startDate: "2024-01-15", baseSalary: 12000000, status: "active", department: "Tarot", contractType: "HĐLĐ" },
+  { id: 2, name: "Trần Thị B", position: "Thầy phong thủy", phone: "0912345679", startDate: "2024-03-01", baseSalary: 10000000, status: "active", department: "Phong Thủy", contractType: "HĐLĐ" },
+  { id: 3, name: "Lê Văn C", position: "Thầy xem bói", phone: "0912345680", startDate: "2024-02-10", baseSalary: 9000000, status: "active", department: "Bói Toán", contractType: "HĐLĐ" },
+  { id: 4, name: "Phạm Thị D", position: "Cô phù thủy", phone: "0912345681", startDate: "2024-04-01", baseSalary: 8500000, status: "active", department: "Xăm Bùa", contractType: "HĐLĐ" },
+  { id: 5, name: "Nguyễn Văn E", position: "Nhân viên lễ tân", phone: "0912345682", startDate: "2024-05-01", baseSalary: 5000000, status: "active", department: "Lễ Tân", contractType: "Thử việc" },
+  { id: 6, name: "Hoàng Thị F", position: "Hướng dẫn viên", phone: "0912345683", startDate: "2024-06-01", baseSalary: 6000000, status: "active", department: "Hướng Dẫn", contractType: "HĐLĐ" },
 ];
 
 const mockPackages: SalaryPackage[] = [
-  { id: 1, name: "Gói 5%", percentage: 5, description: "Nhân viên mới" },
-  { id: 2, name: "Gói 10%", percentage: 10, description: "Nhân viên chính thức" },
-  { id: 3, name: "Gói 15%", percentage: 15, description: "Nhân viên kinh nghiệm" },
-  { id: 4, name: "Gói 20%", percentage: 20, description: "Quản lý" },
+  { id: 1, name: "Gói Tân binh", percentage: 5, description: "Nhân viên mới" },
+  { id: 2, name: "Gói Chính thức", percentage: 10, description: "Nhân viên chính thức" },
+  { id: 3, name: "Gói Cao cấp", percentage: 15, description: "Thầy cô kinh nghiệm" },
+  { id: 4, name: "Gói VIP", percentage: 20, description: "Trưởng phòng" },
 ];
 
-const mockDepartments = ["Ban điều hành", "Du lịch", "An ninh", "Lễ tân", "Nhà hàng", "Kế toán"];
+const mockDepartments = ["Tarot", "Phong Thủy", "Bói Toán", "Xăm Bùa", "Lễ Tân", "Hướng Dẫn", "Kế Toán"];
 const mockContracts = ["HĐLĐ", "Thử việc", "Hợp đồng thời vụ"];
 
 const mockAttendance: Attendance[] = [
@@ -74,10 +75,11 @@ const mockAttendance: Attendance[] = [
 ];
 
 const mockFinance: FinanceRecord[] = [
-  { id: 1, type: "income", amount: 15000000, description: "Doanh thu tour", date: "2024-10-01" },
-  { id: 2, type: "income", amount: 8000000, description: "Vé vào cổng", date: "2024-10-02" },
-  { id: 3, type: "expense", amount: 3000000, description: "Mua sắm vật tư", date: "2024-10-01" },
-  { id: 4, type: "expense", amount: 1500000, description: "Điện nước", date: "2024-10-02" },
+  { id: 1, type: "income", amount: 15000000, description: "Xem Tarot", date: "2024-10-01" },
+  { id: 2, type: "income", amount: 8000000, description: "Xem phong thủy", date: "2024-10-02" },
+  { id: 3, type: "income", amount: 12000000, description: "Bói bài Tarot", date: "2024-10-03" },
+  { id: 4, type: "expense", amount: 3000000, description: "Mua bài Tarot mới", date: "2024-10-01" },
+  { id: 5, type: "expense", amount: 1500000, description: "Điện nước", date: "2024-10-02" },
 ];
 
 const menuItems = [

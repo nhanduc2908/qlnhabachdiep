@@ -40,15 +40,6 @@ interface FinanceRecord {
   date: string;
 }
 
-interface Performance {
-  id: number;
-  employeeId: number;
-  month: number;
-  year: number;
-  rating: number;
-  notes: string;
-}
-
 const mockEmployees: Employee[] = [
   { id: 1, name: "Nguyễn Văn A", position: "Thầy Tarot", phone: "0912345678", startDate: "2024-01-15", baseSalary: 12000000, status: "active", department: "Tarot", contractType: "HĐLĐ" },
   { id: 2, name: "Trần Thị B", position: "Thầy phong thủy", phone: "0912345679", startDate: "2024-03-01", baseSalary: 10000000, status: "active", department: "Phong Thủy", contractType: "HĐLĐ" },
@@ -65,16 +56,16 @@ const mockPackages: SalaryPackage[] = [
   { id: 4, name: "Gói VIP", percentage: 20, description: "Trưởng phòng" },
 ];
 
-const mockDepartments = ["Tarot", "Phong Thủy", "Bói Toán", "Xăm Bùa", "Lễ Tân", "Hướng Dẫn", "Kế Toán"];
+const mockDepartmentsInit = ["Tarot", "Phong Thủy", "Bói Toán", "Xăm Bùa", "Lễ Tân", "Hướng Dẫn", "Kế Toán"];
 const mockContracts = ["HĐLĐ", "Thử việc", "Hợp đồng thời vụ"];
 
-const mockAttendance: Attendance[] = [
+const mockAttendanceInit: Attendance[] = [
   { id: 1, employeeId: 1, date: "2024-10-01", checkIn: "08:00", checkOut: "17:00", status: "present" },
   { id: 2, employeeId: 2, date: "2024-10-01", checkIn: "08:00", checkOut: "17:00", status: "present" },
   { id: 3, employeeId: 3, date: "2024-10-01", checkIn: "08:30", checkOut: "17:00", status: "late" },
 ];
 
-const mockFinance: FinanceRecord[] = [
+const mockFinanceInit: FinanceRecord[] = [
   { id: 1, type: "income", amount: 15000000, description: "Xem Tarot", date: "2024-10-01" },
   { id: 2, type: "income", amount: 8000000, description: "Xem phong thủy", date: "2024-10-02" },
   { id: 3, type: "income", amount: 12000000, description: "Bói bài Tarot", date: "2024-10-03" },
@@ -97,12 +88,20 @@ const menuItems = [
 
 export default function Home() {
   const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
-  const [packages] = useState<SalaryPackage[]>(mockPackages);
+  const [packages, setPackages] = useState<SalaryPackage[]>(mockPackages);
   const [selectedTab, setSelectedTab] = useState<Tab>("employees");
-  const [showAddForm, setShowAddForm] = useState(false);
   const [revenue, setRevenue] = useState<number>(50000000);
   const [selectedEmployeePackages, setSelectedEmployeePackages] = useState<Map<number, number>>(new Map());
-  const [finance] = useState<FinanceRecord[]>(mockFinance);
+  const [finance, setFinance] = useState<FinanceRecord[]>(mockFinanceInit);
+  const [attendance, setAttendance] = useState<Attendance[]>(mockAttendanceInit);
+  const [departments, setDepartments] = useState<string[]>(mockDepartmentsInit);
+  
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [showPackageForm, setShowPackageForm] = useState(false);
+  const [showFinanceForm, setShowFinanceForm] = useState(false);
+  const [showDeptForm, setShowDeptForm] = useState(false);
+  const [showAttendanceForm, setShowAttendanceForm] = useState(false);
   
   const [newEmployee, setNewEmployee] = useState({
     name: "", position: "", phone: "", startDate: "", baseSalary: 0, department: "", contractType: "",
@@ -110,16 +109,79 @@ export default function Home() {
 
   const [newPackage, setNewPackage] = useState({ name: "", percentage: 0, description: "" });
   const [newFinance, setNewFinance] = useState({ type: "income" as "income" | "expense", amount: 0, description: "", date: "" });
+  const [newDept, setNewDept] = useState("");
+  const [newAttendance, setNewAttendance] = useState({ employeeId: 0, date: "", checkIn: "", checkOut: "", status: "present" as "present" | "absent" | "late" });
 
   const handleAddEmployee = () => {
     if (!newEmployee.name || !newEmployee.position || !newEmployee.baseSalary) return;
-    const id = employees.length + 1;
-    setEmployees([...employees, { ...newEmployee, id, status: "active" }]);
-    setNewEmployee({ name: "", position: "", phone: "", startDate: "", baseSalary: 0, department: "", contractType: "" });
-    setShowAddForm(false);
+    const id = editingId || Math.max(...employees.map(e => e.id), 0) + 1;
+    setEmployees(editingId 
+      ? employees.map(e => e.id === editingId ? { ...e, ...newEmployee, id: editingId } : e)
+      : [...employees, { ...newEmployee, id, status: "active" }]
+    );
+    resetForms();
+  };
+
+  const handleEditEmployee = (emp: Employee) => {
+    setNewEmployee({ name: emp.name, position: emp.position, phone: emp.phone, startDate: emp.startDate, baseSalary: emp.baseSalary, department: emp.department, contractType: emp.contractType });
+    setEditingId(emp.id);
+    setShowAddForm(true);
   };
 
   const handleDeleteEmployee = (id: number) => setEmployees(employees.filter((e) => e.id !== id));
+
+  const handleAddPackage = () => {
+    if (!newPackage.name || !newPackage.percentage) return;
+    const id = Math.max(...packages.map(p => p.id), 0) + 1;
+    setPackages([...packages, { ...newPackage, id }]);
+    setNewPackage({ name: "", percentage: 0, description: "" });
+    setShowPackageForm(false);
+  };
+
+  const handleDeletePackage = (id: number) => setPackages(packages.filter(p => p.id !== id));
+
+  const handleAddFinance = () => {
+    if (!newFinance.amount || !newFinance.description) return;
+    const id = Math.max(...finance.map(f => f.id), 0) + 1;
+    setFinance([...finance, { ...newFinance, id }]);
+    setNewFinance({ type: "income", amount: 0, description: "", date: "" });
+    setShowFinanceForm(false);
+  };
+
+  const handleDeleteFinance = (id: number) => setFinance(finance.filter(f => f.id !== id));
+
+  const handleAddDept = () => {
+    if (!newDept) return;
+    if (!departments.includes(newDept)) {
+      setDepartments([...departments, newDept]);
+    }
+    setNewDept("");
+    setShowDeptForm(false);
+  };
+
+  const handleDeleteDept = (dept: string) => {
+    if (employees.some(e => e.department === dept)) {
+      alert("Không thể xóa phòng ban có nhân viên!");
+      return;
+    }
+    setDepartments(departments.filter(d => d !== dept));
+  };
+
+  const handleAddAttendance = () => {
+    if (!newAttendance.employeeId || !newAttendance.date) return;
+    const id = Math.max(...attendance.map(a => a.id), 0) + 1;
+    setAttendance([...attendance, { ...newAttendance, id }]);
+    setNewAttendance({ employeeId: 0, date: "", checkIn: "", checkOut: "", status: "present" });
+    setShowAttendanceForm(false);
+  };
+
+  const handleDeleteAttendance = (id: number) => setAttendance(attendance.filter(a => a.id !== id));
+
+  const resetForms = () => {
+    setNewEmployee({ name: "", position: "", phone: "", startDate: "", baseSalary: 0, department: "", contractType: "" });
+    setEditingId(null);
+    setShowAddForm(false);
+  };
 
   const handleAssignPackage = (employeeId: number, percentage: number) => {
     const newMap = new Map(selectedEmployeePackages);
@@ -175,12 +237,13 @@ export default function Home() {
             <section>
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Danh sách nhân viên</h2>
-                <button onClick={() => setShowAddForm(true)} className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm">
+                <button onClick={() => { resetForms(); setShowAddForm(true); }} className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm">
                   + Thêm NV
                 </button>
               </div>
               {showAddForm && (
                 <div className="bg-neutral-800 p-4 rounded-lg mb-4">
+                  <h3 className="font-semibold mb-3">{editingId ? "Sửa nhân viên" : "Thêm nhân viên mới"}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <input type="text" placeholder="Họ tên" value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
                     <input type="text" placeholder="Chức vụ" value={newEmployee.position} onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
@@ -189,19 +252,23 @@ export default function Home() {
                     <input type="number" placeholder="Lương CB" value={newEmployee.baseSalary || ""} onChange={(e) => setNewEmployee({ ...newEmployee, baseSalary: Number(e.target.value) })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
                     <select value={newEmployee.department} onChange={(e) => setNewEmployee({ ...newEmployee, department: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg">
                       <option value="">Chọn phòng ban</option>
-                      {mockDepartments.map(d => <option key={d} value={d}>{d}</option>)}
+                      {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <select value={newEmployee.contractType} onChange={(e) => setNewEmployee({ ...newEmployee, contractType: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg">
+                      <option value="">Loại hợp đồng</option>
+                      {mockContracts.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                   <div className="flex gap-2 mt-3">
                     <button onClick={handleAddEmployee} className="bg-emerald-600 px-4 py-2 rounded-lg">Lưu</button>
-                    <button onClick={() => setShowAddForm(false)} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
+                    <button onClick={resetForms} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
                   </div>
                 </div>
               )}
               <div className="bg-neutral-800 rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">Tên</th><th className="px-3 py-2 text-left">Chức vụ</th><th className="px-3 py-2 text-left">Phòng ban</th><th className="px-3 py-2 text-right">Lương CB</th><th className="px-3 py-2 text-center">TT</th></tr>
+                    <tr><th className="px-3 py-2 text-left">Tên</th><th className="px-3 py-2 text-left">Chức vụ</th><th className="px-3 py-2 text-left">Phòng ban</th><th className="px-3 py-2 text-right">Lương CB</th><th className="px-3 py-2 text-center">TT</th><th className="px-3 py-2 text-center">Thao tác</th></tr>
                   </thead>
                   <tbody>
                     {employees.map(emp => (
@@ -210,7 +277,11 @@ export default function Home() {
                         <td className="px-3 py-2">{emp.position}</td>
                         <td className="px-3 py-2">{emp.department}</td>
                         <td className="px-3 py-2 text-right">{emp.baseSalary.toLocaleString("vi-VN")}đ</td>
-                        <td className="px-3 py-2 text-center"><button onClick={() => handleDeleteEmployee(emp.id)} className="text-red-400 text-xs">Xóa</button></td>
+                        <td className="px-3 py-2 text-center"><span className="text-green-400 text-xs">Đang hoạt động</span></td>
+                        <td className="px-3 py-2 text-center">
+                          <button onClick={() => handleEditEmployee(emp)} className="text-blue-400 text-xs mr-2">Sửa</button>
+                          <button onClick={() => handleDeleteEmployee(emp.id)} className="text-red-400 text-xs">Xóa</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -221,12 +292,25 @@ export default function Home() {
 
           {selectedTab === "departments" && (
             <section>
-              <h2 className="text-xl font-semibold mb-4">Phòng ban</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Phòng ban</h2>
+                <button onClick={() => setShowDeptForm(true)} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm PB</button>
+              </div>
+              {showDeptForm && (
+                <div className="bg-neutral-800 p-4 rounded-lg mb-4 flex gap-2">
+                  <input type="text" placeholder="Tên phòng ban mới" value={newDept} onChange={(e) => setNewDept(e.target.value)} className="bg-neutral-700 px-3 py-2 rounded-lg flex-1" />
+                  <button onClick={handleAddDept} className="bg-emerald-600 px-4 py-2 rounded-lg">Lưu</button>
+                  <button onClick={() => setShowDeptForm(false)} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
+                </div>
+              )}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {mockDepartments.map(dept => (
-                  <div key={dept} className="bg-neutral-800 p-4 rounded-lg">
-                    <div className="font-semibold">{dept}</div>
-                    <div className="text-neutral-400 text-sm">{employees.filter(e => e.department === dept).length} nhân viên</div>
+                {departments.map(dept => (
+                  <div key={dept} className="bg-neutral-800 p-4 rounded-lg flex justify-between items-center">
+                    <div>
+                      <div className="font-semibold">{dept}</div>
+                      <div className="text-neutral-400 text-sm">{employees.filter(e => e.department === dept).length} nhân viên</div>
+                    </div>
+                    <button onClick={() => handleDeleteDept(dept)} className="text-red-400 text-xs">Xóa</button>
                   </div>
                 ))}
               </div>
@@ -239,15 +323,24 @@ export default function Home() {
               <div className="bg-neutral-800 rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">Nhân viên</th><th className="px-3 py-2 text-left">Loại HĐ</th><th className="px-3 py-2 text-left">Ngày ký</th><th className="px-3 py-2 text-left">Trạng thái</th></tr>
+                    <tr><th className="px-3 py-2 text-left">Nhân viên</th><th className="px-3 py-2 text-left">Loại HĐ</th><th className="px-3 py-2 text-left">Ngày ký</th><th className="px-3 py-2 text-left">Trạng thái</th><th className="px-3 py-2 text-center">Thao tác</th></tr>
                   </thead>
                   <tbody>
                     {employees.map(emp => (
                       <tr key={emp.id} className="border-t border-neutral-700">
                         <td className="px-3 py-2">{emp.name}</td>
-                        <td className="px-3 py-2">{emp.contractType}</td>
+                        <td className="px-3 py-2">
+                          <select value={emp.contractType} onChange={(ev) => {
+                            setEmployees(employees.map(emp2 => emp2.id === emp.id ? { ...emp2, contractType: ev.target.value } : emp2));
+                          }} className="bg-neutral-700 px-2 py-1 rounded text-sm">
+                            {mockContracts.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </td>
                         <td className="px-3 py-2">{emp.startDate}</td>
                         <td className="px-3 py-2 text-green-400">Còn hiệu lực</td>
+                        <td className="px-3 py-2 text-center">
+                          <button onClick={() => handleDeleteEmployee(emp.id)} className="text-red-400 text-xs">Xóa</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -260,12 +353,28 @@ export default function Home() {
             <section>
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Gói lương %</h2>
-                <button onClick={() => {}} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm gói</button>
+                <button onClick={() => { setNewPackage({ name: "", percentage: 0, description: "" }); setShowPackageForm(true); }} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm gói</button>
               </div>
+              {showPackageForm && (
+                <div className="bg-neutral-800 p-4 rounded-lg mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input type="text" placeholder="Tên gói" value={newPackage.name} onChange={(e) => setNewPackage({ ...newPackage, name: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="number" placeholder="Phần trăm (%)" value={newPackage.percentage || ""} onChange={(e) => setNewPackage({ ...newPackage, percentage: Number(e.target.value) })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="text" placeholder="Mô tả" value={newPackage.description} onChange={(e) => setNewPackage({ ...newPackage, description: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={handleAddPackage} className="bg-emerald-600 px-4 py-2 rounded-lg">Lưu</button>
+                    <button onClick={() => setShowPackageForm(false)} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {packages.map(pkg => (
                   <div key={pkg.id} className="bg-neutral-800 p-4 rounded-lg">
-                    <div className="text-3xl font-bold text-emerald-400">{pkg.percentage}%</div>
+                    <div className="flex justify-between">
+                      <div className="text-3xl font-bold text-emerald-400">{pkg.percentage}%</div>
+                      <button onClick={() => handleDeletePackage(pkg.id)} className="text-red-400 text-xs">Xóa</button>
+                    </div>
                     <div className="font-semibold">{pkg.name}</div>
                     <div className="text-neutral-400 text-sm">{pkg.description}</div>
                   </div>
@@ -298,7 +407,7 @@ export default function Home() {
                           <td className="px-3 py-2">
                             <select value={selectedEmployeePackages.get(emp.id) || ""} onChange={(e) => handleAssignPackage(emp.id, Number(e.target.value))} className="bg-neutral-700 px-2 py-1 rounded text-sm">
                               <option value="">Chọn</option>
-                              {packages.map(p => <option key={p.id} value={p.id}>{p.percentage}%</option>)}
+                              {packages.map(p => <option key={p.id} value={p.id}>{p.percentage}% - {p.name}</option>)}
                             </select>
                           </td>
                           <td className="px-3 py-2 text-right">{emp.baseSalary.toLocaleString("vi-VN")}đ</td>
@@ -315,14 +424,39 @@ export default function Home() {
 
           {selectedTab === "attendance" && (
             <section>
-              <h2 className="text-xl font-semibold mb-4">Chấm công</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Chấm công</h2>
+                <button onClick={() => setShowAttendanceForm(true)} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm</button>
+              </div>
+              {showAttendanceForm && (
+                <div className="bg-neutral-800 p-4 rounded-lg mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <select value={newAttendance.employeeId} onChange={(e) => setNewAttendance({ ...newAttendance, employeeId: Number(e.target.value) })} className="bg-neutral-700 px-3 py-2 rounded-lg">
+                      <option value={0}>Chọn nhân viên</option>
+                      {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                    </select>
+                    <input type="date" value={newAttendance.date} onChange={(e) => setNewAttendance({ ...newAttendance, date: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="time" value={newAttendance.checkIn} onChange={(e) => setNewAttendance({ ...newAttendance, checkIn: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="time" value={newAttendance.checkOut} onChange={(e) => setNewAttendance({ ...newAttendance, checkOut: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <select value={newAttendance.status} onChange={(e) => setNewAttendance({ ...newAttendance, status: e.target.value as any })} className="bg-neutral-700 px-3 py-2 rounded-lg">
+                      <option value="present">Đúng giờ</option>
+                      <option value="late">Muộn</option>
+                      <option value="absent">Nghỉ</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={handleAddAttendance} className="bg-emerald-600 px-4 py-2 rounded-lg">Lưu</button>
+                    <button onClick={() => setShowAttendanceForm(false)} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
+                  </div>
+                </div>
+              )}
               <div className="bg-neutral-800 rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Ngày</th><th className="px-3 py-2 text-left">Giờ vào</th><th className="px-3 py-2 text-left">Giờ ra</th><th className="px-3 py-2 text-left">Trạng thái</th></tr>
+                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Ngày</th><th className="px-3 py-2 text-left">Giờ vào</th><th className="px-3 py-2 text-left">Giờ ra</th><th className="px-3 py-2 text-left">Trạng thái</th><th className="px-3 py-2 text-center">Thao tác</th></tr>
                   </thead>
                   <tbody>
-                    {mockAttendance.map(a => {
+                    {attendance.map(a => {
                       const emp = employees.find(e => e.id === a.employeeId);
                       return (
                         <tr key={a.id} className="border-t border-neutral-700">
@@ -332,6 +466,9 @@ export default function Home() {
                           <td className="px-3 py-2">{a.checkOut}</td>
                           <td className={`px-3 py-2 ${a.status === "present" ? "text-green-400" : a.status === "late" ? "text-yellow-400" : "text-red-400"}`}>
                             {a.status === "present" ? "Đúng giờ" : a.status === "late" ? "Muộn" : "Nghỉ"}
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            <button onClick={() => handleDeleteAttendance(a.id)} className="text-red-400 text-xs">Xóa</button>
                           </td>
                         </tr>
                       );
@@ -378,8 +515,25 @@ export default function Home() {
             <section>
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Thu chi</h2>
-                <button onClick={() => {}} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm</button>
+                <button onClick={() => { setNewFinance({ type: "income", amount: 0, description: "", date: "" }); setShowFinanceForm(true); }} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm</button>
               </div>
+              {showFinanceForm && (
+                <div className="bg-neutral-800 p-4 rounded-lg mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <select value={newFinance.type} onChange={(e) => setNewFinance({ ...newFinance, type: e.target.value as any })} className="bg-neutral-700 px-3 py-2 rounded-lg">
+                      <option value="income">Thu</option>
+                      <option value="expense">Chi</option>
+                    </select>
+                    <input type="date" value={newFinance.date} onChange={(e) => setNewFinance({ ...newFinance, date: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="number" placeholder="Số tiền" value={newFinance.amount || ""} onChange={(e) => setNewFinance({ ...newFinance, amount: Number(e.target.value) })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="text" placeholder="Mô tả" value={newFinance.description} onChange={(e) => setNewFinance({ ...newFinance, description: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={handleAddFinance} className="bg-emerald-600 px-4 py-2 rounded-lg">Lưu</button>
+                    <button onClick={() => setShowFinanceForm(false)} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-neutral-800 p-4 rounded-lg">
                   <div className="text-neutral-400 text-sm">Tổng thu</div>
@@ -393,7 +547,7 @@ export default function Home() {
               <div className="bg-neutral-800 rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">Ngày</th><th className="px-3 py-2 text-left">Loại</th><th className="px-3 py-2 text-left">Mô tả</th><th className="px-3 py-2 text-right">Số tiền</th></tr>
+                    <tr><th className="px-3 py-2 text-left">Ngày</th><th className="px-3 py-2 text-left">Loại</th><th className="px-3 py-2 text-left">Mô tả</th><th className="px-3 py-2 text-right">Số tiền</th><th className="px-3 py-2 text-center">Thao tác</th></tr>
                   </thead>
                   <tbody>
                     {finance.map(f => (
@@ -404,6 +558,9 @@ export default function Home() {
                         </td>
                         <td className="px-3 py-2">{f.description}</td>
                         <td className="px-3 py-2 text-right">{f.amount.toLocaleString("vi-VN")}đ</td>
+                        <td className="px-3 py-2 text-center">
+                          <button onClick={() => handleDeleteFinance(f.id)} className="text-red-400 text-xs">Xóa</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -422,7 +579,7 @@ export default function Home() {
                   </thead>
                   <tbody>
                     {employees.map(emp => {
-                      const rating = emp.baseSalary >= 7000000 ? 5 : emp.baseSalary >= 5000000 ? 4 : 3;
+                      const rating = emp.baseSalary >= 10000000 ? 5 : emp.baseSalary >= 7000000 ? 4 : emp.baseSalary >= 5000000 ? 3 : 2;
                       const stars = "⭐".repeat(rating);
                       const notes = rating >= 4 ? "Xuất sắc" : rating >= 3 ? "Hoàn thành tốt" : "Cần cải thiện";
                       return (

@@ -97,6 +97,7 @@ interface Employee {
   status: string;
   department: string;
   contractType: string;
+  skills: string[];
 }
 
 interface SalaryPackage {
@@ -124,12 +125,12 @@ interface FinanceRecord {
 }
 
 const mockEmployees: Employee[] = [
-  { id: 1, name: "Nguyễn Văn A", position: "Thầy Tarot", phone: "0912345678", startDate: "2024-01-15", status: "active", department: "Tarot", contractType: "HĐLĐ" },
-  { id: 2, name: "Trần Thị B", position: "Thầy phong thủy", phone: "0912345679", startDate: "2024-03-01", status: "active", department: "Phong Thủy", contractType: "HĐLĐ" },
-  { id: 3, name: "Lê Văn C", position: "Thầy xem bói", phone: "0912345680", startDate: "2024-02-10", status: "active", department: "Bói Toán", contractType: "HĐLĐ" },
-  { id: 4, name: "Phạm Thị D", position: "Cô phù thủy", phone: "0912345681", startDate: "2024-04-01", status: "active", department: "Xăm Bùa", contractType: "HĐLĐ" },
-  { id: 5, name: "Nguyễn Văn E", position: "Nhân viên lễ tân", phone: "0912345682", startDate: "2024-05-01", status: "active", department: "Lễ Tân", contractType: "Thử việc" },
-  { id: 6, name: "Hoàng Thị F", position: "Hướng dẫn viên", phone: "0912345683", startDate: "2024-06-01", status: "active", department: "Hướng Dẫn", contractType: "HĐLĐ" },
+  { id: 1, name: "Nguyễn Văn A", position: "Thầy Tarot", phone: "0912345678", startDate: "2024-01-15", status: "active", department: "Tarot", contractType: "HĐLĐ", skills: ["Tarot", "Lenormand", "Kinh Dịch"] },
+  { id: 2, name: "Trần Thị B", position: "Thầy phong thủy", phone: "0912345679", startDate: "2024-03-01", status: "active", department: "Phong Thủy", contractType: "HĐLĐ", skills: ["Tử Vi", "Thần Số Học", "Kinh Dịch"] },
+  { id: 3, name: "Lê Văn C", position: "Thầy xem bói", phone: "0912345680", startDate: "2024-02-10", status: "active", department: "Bói Toán", contractType: "HĐLĐ", skills: ["Bài Tây", "Bói Cổ", "Lá trà"] },
+  { id: 4, name: "Phạm Thị D", position: "Cô phù thủy", phone: "0912345681", startDate: "2024-04-01", status: "active", department: "Xăm Bùa", contractType: "HĐLĐ", skills: ["Xăm", "Quẻ", "Sâm"] },
+  { id: 5, name: "Nguyễn Văn E", position: "Nhân viên lễ tân", phone: "0912345682", startDate: "2024-05-01", status: "active", department: "Lễ Tân", contractType: "Thử việc", skills: ["Lenormand", "Bài Tây"] },
+  { id: 6, name: "Hoàng Thị F", position: "Hướng dẫn viên", phone: "0912345683", startDate: "2024-06-01", status: "active", department: "Hướng Dẫn", contractType: "HĐLĐ", skills: ["Tarot", "Tử Vi", "Thần Số Học Tên"] },
 ];
 
 const mockPackages: SalaryPackage[] = [
@@ -232,7 +233,7 @@ export default function Home() {
   const [showAttendanceForm, setShowAttendanceForm] = useState(false);
   
   const [newEmployee, setNewEmployee] = useState({
-    name: "", position: "", phone: "", startDate: "", department: "", contractType: "",
+    name: "", position: "", phone: "", startDate: "", department: "", contractType: "", skills: [] as string[],
   });
 
   const [newPackage, setNewPackage] = useState({ name: "", percentage: 0, description: "" });
@@ -251,7 +252,7 @@ export default function Home() {
   };
 
   const handleEditEmployee = (emp: Employee) => {
-    setNewEmployee({ name: emp.name, position: emp.position, phone: emp.phone, startDate: emp.startDate, department: emp.department, contractType: emp.contractType });
+    setNewEmployee({ name: emp.name, position: emp.position, phone: emp.phone, startDate: emp.startDate, department: emp.department, contractType: emp.contractType, skills: emp.skills });
     setEditingId(emp.id);
     setShowAddForm(true);
   };
@@ -326,7 +327,7 @@ export default function Home() {
   const handleDeleteInventory = (id: number) => setInventory(inventory.filter(i => i.id !== id));
 
   const resetForms = () => {
-    setNewEmployee({ name: "", position: "", phone: "", startDate: "", department: "", contractType: "" });
+    setNewEmployee({ name: "", position: "", phone: "", startDate: "", department: "", contractType: "", skills: [] });
     setEditingId(null);
     setShowAddForm(false);
   };
@@ -351,7 +352,7 @@ export default function Home() {
         <div className="glass-card p-8 max-w-md w-full mx-4 text-center animate-fade-in">
           <div className="text-5xl mb-4">🔮</div>
           <h1 className={`text-2xl font-bold mb-2 ${darkMode ? 'gold-gradient' : 'text-purple-700'}`}>Bách Diệp Cổ Trấn</h1>
-          <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Quản lý nhân viên & Tính lương</p>
+          <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Quản lý nhân viên, khách hàng & 10+ kỹ năng bói toán</p>
           
           <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Chọn vai trò để tiếp tục:</p>
           
@@ -479,20 +480,23 @@ export default function Home() {
               <div className="glass-card overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="table-header">
-                    <tr><th className="px-4 py-3 text-left">Tên</th><th className="px-4 py-3 text-left">Chức vụ</th><th className="px-4 py-3 text-left">Phòng ban</th><th className="px-4 py-3 text-left">Ngày vào</th><th className="px-4 py-3 text-center">TT</th><th className="px-4 py-3 text-center">Thao tác</th></tr>
+                    <tr><th className="px-4 py-3 text-left">Tên</th><th className="px-4 py-3 text-left">Chức vụ</th><th className="px-4 py-3 text-left">Kỹ năng</th><th className="px-4 py-3 text-left">Phòng ban</th><th className="px-4 py-3 text-left">Ngày vào</th><th className="px-4 py-3 text-center">TT</th></tr>
                   </thead>
                   <tbody>
                     {employees.map(emp => (
                       <tr key={emp.id} className="table-row">
                         <td className="px-4 py-3 font-medium">{emp.name}</td>
                         <td className="px-4 py-3">{emp.position}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {emp.skills?.map((skill, i) => (
+                              <span key={i} className="text-xs bg-purple-900 text-purple-200 px-2 py-0.5 rounded-full">{skill}</span>
+                            ))}
+                          </div>
+                        </td>
                         <td className="px-4 py-3">{emp.department}</td>
                         <td className="px-4 py-3">{emp.startDate}</td>
                         <td className="px-4 py-3 text-center"><span className="badge text-xs">Hoạt động</span></td>
-                        <td className="px-4 py-3 text-center">
-                          <button onClick={() => handleEditEmployee(emp)} className="text-purple-400 hover:text-purple-300 text-xs mr-3 font-medium">✏️ Sửa</button>
-                          <button onClick={() => handleDeleteEmployee(emp.id)} className="text-red-400 hover:text-red-300 text-xs">🗑️</button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>

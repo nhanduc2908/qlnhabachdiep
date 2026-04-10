@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "insurance" | "performance";
+
 interface Employee {
   id: number;
   name: string;
@@ -10,6 +12,8 @@ interface Employee {
   startDate: string;
   baseSalary: number;
   status: string;
+  department: string;
+  contractType: string;
 }
 
 interface SalaryPackage {
@@ -19,24 +23,38 @@ interface SalaryPackage {
   description: string;
 }
 
-interface EmployeePackage {
+interface Attendance {
+  id: number;
   employeeId: number;
-  packageId: number;
-  percentage: number;
+  date: string;
+  checkIn: string;
+  checkOut: string;
+  status: "present" | "absent" | "late";
 }
 
-interface SalaryRecord {
+interface FinanceRecord {
+  id: number;
+  type: "income" | "expense";
+  amount: number;
+  description: string;
+  date: string;
+}
+
+interface Performance {
   id: number;
   employeeId: number;
   month: number;
   year: number;
-  totalSalary: number;
+  rating: number;
+  notes: string;
 }
 
 const mockEmployees: Employee[] = [
-  { id: 1, name: "Nguyễn Văn A", position: "Quản lý", phone: "0912345678", startDate: "2024-01-15", baseSalary: 8000000, status: "active" },
-  { id: 2, name: "Trần Thị B", position: "Hướng dẫn viên", phone: "0912345679", startDate: "2024-03-01", baseSalary: 5000000, status: "active" },
-  { id: 3, name: "Lê Văn C", position: "Bảo vệ", phone: "0912345680", startDate: "2024-02-10", baseSalary: 4000000, status: "active" },
+  { id: 1, name: "Nguyễn Văn A", position: "Quản lý", phone: "0912345678", startDate: "2024-01-15", baseSalary: 8000000, status: "active", department: "Ban điều hành", contractType: "HĐLĐ" },
+  { id: 2, name: "Trần Thị B", position: "Hướng dẫn viên", phone: "0912345679", startDate: "2024-03-01", baseSalary: 5000000, status: "active", department: "Du lịch", contractType: "HĐLĐ" },
+  { id: 3, name: "Lê Văn C", position: "Bảo vệ", phone: "0912345680", startDate: "2024-02-10", baseSalary: 4000000, status: "active", department: "An ninh", contractType: "HĐLĐ" },
+  { id: 4, name: "Phạm Thị D", position: "Lễ tân", phone: "0912345681", startDate: "2024-04-01", baseSalary: 4500000, status: "active", department: "Lễ tân", contractType: "HĐLĐ" },
+  { id: 5, name: "Nguyễn Văn E", position: "Phục vụ", phone: "0912345682", startDate: "2024-05-01", baseSalary: 3800000, status: "active", department: "Nhà hàng", contractType: "Thử việc" },
 ];
 
 const mockPackages: SalaryPackage[] = [
@@ -46,55 +64,60 @@ const mockPackages: SalaryPackage[] = [
   { id: 4, name: "Gói 20%", percentage: 20, description: "Quản lý" },
 ];
 
+const mockDepartments = ["Ban điều hành", "Du lịch", "An ninh", "Lễ tân", "Nhà hàng", "Kế toán"];
+const mockContracts = ["HĐLĐ", "Thử việc", "Hợp đồng thời vụ"];
+
+const mockAttendance: Attendance[] = [
+  { id: 1, employeeId: 1, date: "2024-10-01", checkIn: "08:00", checkOut: "17:00", status: "present" },
+  { id: 2, employeeId: 2, date: "2024-10-01", checkIn: "08:00", checkOut: "17:00", status: "present" },
+  { id: 3, employeeId: 3, date: "2024-10-01", checkIn: "08:30", checkOut: "17:00", status: "late" },
+];
+
+const mockFinance: FinanceRecord[] = [
+  { id: 1, type: "income", amount: 15000000, description: "Doanh thu tour", date: "2024-10-01" },
+  { id: 2, type: "income", amount: 8000000, description: "Vé vào cổng", date: "2024-10-02" },
+  { id: 3, type: "expense", amount: 3000000, description: "Mua sắm vật tư", date: "2024-10-01" },
+  { id: 4, type: "expense", amount: 1500000, description: "Điện nước", date: "2024-10-02" },
+];
+
+const menuItems = [
+  { id: "employees", label: "👥 Nhân viên", icon: "👥" },
+  { id: "departments", label: "🏢 Phòng ban", icon: "🏢" },
+  { id: "contracts", label: "📄 Hợp đồng", icon: "📄" },
+  { id: "packages", label: "💰 Gói lương %", icon: "💰" },
+  { id: "salary", label: "🧮 Tính lương", icon: "🧮" },
+  { id: "attendance", label: "📅 Chấm công", icon: "📅" },
+  { id: "insurance", label: "🏥 BHXH", icon: "🏥" },
+  { id: "finance", label: "💵 Thu chi", icon: "💵" },
+  { id: "performance", label: "⭐ Đánh giá", icon: "⭐" },
+  { id: "reports", label: "📊 Báo cáo", icon: "📊" },
+];
+
 export default function Home() {
   const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
-  const [packages, setPackages] = useState<SalaryPackage[]>(mockPackages);
-  const [selectedTab, setSelectedTab] = useState<"employees" | "packages" | "salary">("employees");
+  const [packages] = useState<SalaryPackage[]>(mockPackages);
+  const [selectedTab, setSelectedTab] = useState<Tab>("employees");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
-  const [showPackageForm, setShowPackageForm] = useState(false);
   const [revenue, setRevenue] = useState<number>(50000000);
   const [selectedEmployeePackages, setSelectedEmployeePackages] = useState<Map<number, number>>(new Map());
-
+  const [finance] = useState<FinanceRecord[]>(mockFinance);
+  
   const [newEmployee, setNewEmployee] = useState({
-    name: "",
-    position: "",
-    phone: "",
-    startDate: "",
-    baseSalary: 0,
+    name: "", position: "", phone: "", startDate: "", baseSalary: 0, department: "", contractType: "",
   });
 
-  const [newPackage, setNewPackage] = useState({
-    name: "",
-    percentage: 0,
-    description: "",
-  });
-
-  const calculateSalary = (baseSalary: number, empId: number) => {
-    const packagePercentage = selectedEmployeePackages.get(empId) || 0;
-    const percentageAmount = (revenue * packagePercentage) / 100;
-    return baseSalary + percentageAmount;
-  };
+  const [newPackage, setNewPackage] = useState({ name: "", percentage: 0, description: "" });
+  const [newFinance, setNewFinance] = useState({ type: "income" as "income" | "expense", amount: 0, description: "", date: "" });
 
   const handleAddEmployee = () => {
     if (!newEmployee.name || !newEmployee.position || !newEmployee.baseSalary) return;
     const id = employees.length + 1;
     setEmployees([...employees, { ...newEmployee, id, status: "active" }]);
-    setNewEmployee({ name: "", position: "", phone: "", startDate: "", baseSalary: 0 });
+    setNewEmployee({ name: "", position: "", phone: "", startDate: "", baseSalary: 0, department: "", contractType: "" });
     setShowAddForm(false);
   };
 
-  const handleDeleteEmployee = (id: number) => {
-    setEmployees(employees.filter((e) => e.id !== id));
-  };
-
-  const handleAddPackage = () => {
-    if (!newPackage.name || !newPackage.percentage) return;
-    const id = packages.length + 1;
-    setPackages([...packages, { ...newPackage, id }]);
-    setNewPackage({ name: "", percentage: 0, description: "" });
-    setShowPackageForm(false);
-  };
+  const handleDeleteEmployee = (id: number) => setEmployees(employees.filter((e) => e.id !== id));
 
   const handleAssignPackage = (employeeId: number, percentage: number) => {
     const newMap = new Map(selectedEmployeePackages);
@@ -102,291 +125,347 @@ export default function Home() {
     setSelectedEmployeePackages(newMap);
   };
 
+  const totalIncome = finance.filter(f => f.type === "income").reduce((sum, f) => sum + f.amount, 0);
+  const totalExpense = finance.filter(f => f.type === "expense").reduce((sum, f) => sum + f.amount, 0);
+
   return (
-    <main className="min-h-screen bg-neutral-900 text-white p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-emerald-400">Bách Diệp Cổ Trấn</h1>
-          <p className="text-neutral-400">Quản lý nhân viên & tính lương</p>
-        </header>
-
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setSelectedTab("employees")}
-            className={`px-4 py-2 rounded-lg ${
-              selectedTab === "employees" ? "bg-emerald-600" : "bg-neutral-800 hover:bg-neutral-700"
-            }`}
-          >
-            Nhân viên
-          </button>
-          <button
-            onClick={() => setSelectedTab("packages")}
-            className={`px-4 py-2 rounded-lg ${
-              selectedTab === "packages" ? "bg-emerald-600" : "bg-neutral-800 hover:bg-neutral-700"
-            }`}
-          >
-            Gói lương %
-          </button>
-          <button
-            onClick={() => setSelectedTab("salary")}
-            className={`px-4 py-2 rounded-lg ${
-              selectedTab === "salary" ? "bg-emerald-600" : "bg-neutral-800 hover:bg-neutral-700"
-            }`}
-          >
-            Tính lương
-          </button>
+    <div className="flex min-h-screen bg-neutral-900">
+      <aside className="w-64 bg-neutral-800 p-4 hidden md:block">
+        <div className="mb-6">
+          <h1 className="text-xl font-bold text-emerald-400">Bách Diệp</h1>
+          <p className="text-xs text-neutral-400">Cổ Trấn</p>
         </div>
+        <nav className="space-y-1">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setSelectedTab(item.id as Tab)}
+              className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                selectedTab === item.id ? "bg-emerald-600 text-white" : "text-neutral-300 hover:bg-neutral-700"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
 
-        {selectedTab === "employees" && (
-          <section>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Danh sách nhân viên</h2>
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg"
-              >
-                + Thêm nhân viên
-              </button>
-            </div>
-
-            {showAddForm && (
-              <div className="bg-neutral-800 p-4 rounded-lg mb-4">
-                <h3 className="font-semibold mb-3">Thêm nhân viên mới</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Họ tên"
-                    value={newEmployee.name}
-                    onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                    className="bg-neutral-700 px-3 py-2 rounded-lg"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Chức vụ"
-                    value={newEmployee.position}
-                    onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })}
-                    className="bg-neutral-700 px-3 py-2 rounded-lg"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Số điện thoại"
-                    value={newEmployee.phone}
-                    onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
-                    className="bg-neutral-700 px-3 py-2 rounded-lg"
-                  />
-                  <input
-                    type="date"
-                    value={newEmployee.startDate}
-                    onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })}
-                    className="bg-neutral-700 px-3 py-2 rounded-lg"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Lương cơ bản"
-                    value={newEmployee.baseSalary || ""}
-                    onChange={(e) => setNewEmployee({ ...newEmployee, baseSalary: Number(e.target.value) })}
-                    className="bg-neutral-700 px-3 py-2 rounded-lg"
-                  />
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={handleAddEmployee}
-                    className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg"
-                  >
-                    Lưu
-                  </button>
-                  <button
-                    onClick={() => setShowAddForm(false)}
-                    className="bg-neutral-700 hover:bg-neutral-600 px-4 py-2 rounded-lg"
-                  >
-                    Hủy
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-neutral-800 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-neutral-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Tên</th>
-                    <th className="px-4 py-3 text-left">Chức vụ</th>
-                    <th className="px-4 py-3 text-left">Điện thoại</th>
-                    <th className="px-4 py-3 text-left">Ngày vào</th>
-                    <th className="px-4 py-3 text-right">Lương CB</th>
-                    <th className="px-4 py-3 text-center">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.map((emp) => (
-                    <tr key={emp.id} className="border-t border-neutral-700">
-                      <td className="px-4 py-3">{emp.name}</td>
-                      <td className="px-4 py-3">{emp.position}</td>
-                      <td className="px-4 py-3">{emp.phone}</td>
-                      <td className="px-4 py-3">{emp.startDate}</td>
-                      <td className="px-4 py-3 text-right">
-                        {emp.baseSalary.toLocaleString("vi-VN")}đ
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => handleDeleteEmployee(emp.id)}
-                          className="text-red-400 hover:text-red-300"
-                        >
-                          Xóa
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-        {selectedTab === "packages" && (
-          <section>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Gói lương phần trăm</h2>
-              <button
-                onClick={() => setShowPackageForm(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg"
-              >
-                + Thêm gói
-              </button>
-            </div>
-
-            {showPackageForm && (
-              <div className="bg-neutral-800 p-4 rounded-lg mb-4">
-                <h3 className="font-semibold mb-3">Thêm gói lương mới</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Tên gói"
-                    value={newPackage.name}
-                    onChange={(e) => setNewPackage({ ...newPackage, name: e.target.value })}
-                    className="bg-neutral-700 px-3 py-2 rounded-lg"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Phần trăm (%)"
-                    value={newPackage.percentage || ""}
-                    onChange={(e) => setNewPackage({ ...newPackage, percentage: Number(e.target.value) })}
-                    className="bg-neutral-700 px-3 py-2 rounded-lg"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Mô tả"
-                    value={newPackage.description}
-                    onChange={(e) => setNewPackage({ ...newPackage, description: e.target.value })}
-                    className="bg-neutral-700 px-3 py-2 rounded-lg"
-                  />
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={handleAddPackage}
-                    className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg"
-                  >
-                    Lưu
-                  </button>
-                  <button
-                    onClick={() => setShowPackageForm(false)}
-                    className="bg-neutral-700 hover:bg-neutral-600 px-4 py-2 rounded-lg"
-                  >
-                    Hủy
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {packages.map((pkg) => (
-                <div key={pkg.id} className="bg-neutral-800 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-emerald-400">{pkg.percentage}%</div>
-                  <div className="font-semibold">{pkg.name}</div>
-                  <div className="text-neutral-400 text-sm">{pkg.description}</div>
-                </div>
+      <main className="flex-1 p-4 md:p-8 text-white overflow-auto">
+        <div className="max-w-5xl mx-auto">
+          <header className="md:hidden mb-6">
+            <h1 className="text-2xl font-bold text-emerald-400">Bách Diệp Cổ Trấn</h1>
+            <nav className="flex gap-2 mt-3 overflow-x-auto pb-2">
+              {menuItems.slice(0, 5).map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setSelectedTab(item.id as Tab)}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${
+                    selectedTab === item.id ? "bg-emerald-600" : "bg-neutral-800"
+                  }`}
+                >
+                  {item.icon} {item.label.split(" ")[1]}
+                </button>
               ))}
-            </div>
-          </section>
-        )}
+            </nav>
+          </header>
 
-        {selectedTab === "salary" && (
-          <section>
-            <h2 className="text-xl font-semibold mb-4">Tính lương theo %gói</h2>
-
-            <div className="bg-neutral-800 p-4 rounded-lg mb-4">
-              <label className="block mb-2">Doanh thu tháng</label>
-              <input
-                type="number"
-                value={revenue}
-                onChange={(e) => setRevenue(Number(e.target.value))}
-                className="bg-neutral-700 px-3 py-2 rounded-lg w-full md:w-64"
-              />
-              <p className="text-neutral-400 text-sm mt-1">
-                Doanh thu: {revenue.toLocaleString("vi-VN")}đ
-              </p>
-            </div>
-
-            <div className="bg-neutral-800 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-neutral-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Nhân viên</th>
-                    <th className="px-4 py-3 text-left">Chức vụ</th>
-                    <th className="px-4 py-3 text-left">Gói %</th>
-                    <th className="px-4 py-3 text-right">Lương CB</th>
-                    <th className="px-4 py-3 text-right">Phần trăm</th>
-                    <th className="px-4 py-3 text-right">Tổng lương</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.map((emp) => {
-                    const empPackage = packages.find(
-                      (p) => p.id === selectedEmployeePackages.get(emp.id)
-                    );
-                    const percentAmount = revenue * ((empPackage?.percentage || 0) / 100);
-                    const total = emp.baseSalary + percentAmount;
-                    return (
+          {selectedTab === "employees" && (
+            <section>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Danh sách nhân viên</h2>
+                <button onClick={() => setShowAddForm(true)} className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm">
+                  + Thêm NV
+                </button>
+              </div>
+              {showAddForm && (
+                <div className="bg-neutral-800 p-4 rounded-lg mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input type="text" placeholder="Họ tên" value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="text" placeholder="Chức vụ" value={newEmployee.position} onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="text" placeholder="Số điện thoại" value={newEmployee.phone} onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="date" value={newEmployee.startDate} onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <input type="number" placeholder="Lương CB" value={newEmployee.baseSalary || ""} onChange={(e) => setNewEmployee({ ...newEmployee, baseSalary: Number(e.target.value) })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
+                    <select value={newEmployee.department} onChange={(e) => setNewEmployee({ ...newEmployee, department: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg">
+                      <option value="">Chọn phòng ban</option>
+                      {mockDepartments.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={handleAddEmployee} className="bg-emerald-600 px-4 py-2 rounded-lg">Lưu</button>
+                    <button onClick={() => setShowAddForm(false)} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
+                  </div>
+                </div>
+              )}
+              <div className="bg-neutral-800 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-neutral-700">
+                    <tr><th className="px-3 py-2 text-left">Tên</th><th className="px-3 py-2 text-left">Chức vụ</th><th className="px-3 py-2 text-left">Phòng ban</th><th className="px-3 py-2 text-right">Lương CB</th><th className="px-3 py-2 text-center">TT</th></tr>
+                  </thead>
+                  <tbody>
+                    {employees.map(emp => (
                       <tr key={emp.id} className="border-t border-neutral-700">
-                        <td className="px-4 py-3">{emp.name}</td>
-                        <td className="px-4 py-3">{emp.position}</td>
-                        <td className="px-4 py-3">
-                          <select
-                            value={selectedEmployeePackages.get(emp.id) || ""}
-                            onChange={(e) =>
-                              handleAssignPackage(
-                                emp.id,
-                                Number(e.target.value)
-                              )
-                            }
-                            className="bg-neutral-700 px-2 py-1 rounded"
-                          >
-                            <option value="">Chọn gói</option>
-                            {packages.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.percentage}% - {p.name}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {emp.baseSalary.toLocaleString("vi-VN")}đ
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {percentAmount.toLocaleString("vi-VN")}đ
-                        </td>
-                        <td className="px-4 py-3 text-right font-semibold text-emerald-400">
-                          {total.toLocaleString("vi-VN")}đ
-                        </td>
+                        <td className="px-3 py-2">{emp.name}</td>
+                        <td className="px-3 py-2">{emp.position}</td>
+                        <td className="px-3 py-2">{emp.department}</td>
+                        <td className="px-3 py-2 text-right">{emp.baseSalary.toLocaleString("vi-VN")}đ</td>
+                        <td className="px-3 py-2 text-center"><button onClick={() => handleDeleteEmployee(emp.id)} className="text-red-400 text-xs">Xóa</button></td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-      </div>
-    </main>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "departments" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Phòng ban</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {mockDepartments.map(dept => (
+                  <div key={dept} className="bg-neutral-800 p-4 rounded-lg">
+                    <div className="font-semibold">{dept}</div>
+                    <div className="text-neutral-400 text-sm">{employees.filter(e => e.department === dept).length} nhân viên</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "contracts" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Hợp đồng lao động</h2>
+              <div className="bg-neutral-800 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-neutral-700">
+                    <tr><th className="px-3 py-2 text-left">Nhân viên</th><th className="px-3 py-2 text-left">Loại HĐ</th><th className="px-3 py-2 text-left">Ngày ký</th><th className="px-3 py-2 text-left">Trạng thái</th></tr>
+                  </thead>
+                  <tbody>
+                    {employees.map(emp => (
+                      <tr key={emp.id} className="border-t border-neutral-700">
+                        <td className="px-3 py-2">{emp.name}</td>
+                        <td className="px-3 py-2">{emp.contractType}</td>
+                        <td className="px-3 py-2">{emp.startDate}</td>
+                        <td className="px-3 py-2 text-green-400">Còn hiệu lực</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "packages" && (
+            <section>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Gói lương %</h2>
+                <button onClick={() => {}} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm gói</button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {packages.map(pkg => (
+                  <div key={pkg.id} className="bg-neutral-800 p-4 rounded-lg">
+                    <div className="text-3xl font-bold text-emerald-400">{pkg.percentage}%</div>
+                    <div className="font-semibold">{pkg.name}</div>
+                    <div className="text-neutral-400 text-sm">{pkg.description}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "salary" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Tính lương theo %gói</h2>
+              <div className="bg-neutral-800 p-4 rounded-lg mb-4">
+                <label className="block mb-2">Doanh thu tháng</label>
+                <input type="number" value={revenue} onChange={(e) => setRevenue(Number(e.target.value))} className="bg-neutral-700 px-3 py-2 rounded-lg w-full md:w-64" />
+                <p className="text-neutral-400 text-sm mt-1">Doanh thu: {revenue.toLocaleString("vi-VN")}đ</p>
+              </div>
+              <div className="bg-neutral-800 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-neutral-700">
+                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Gói %</th><th className="px-3 py-2 text-right">Lương CB</th><th className="px-3 py-2 text-right">Phần trăm</th><th className="px-3 py-2 text-right">Tổng</th></tr>
+                  </thead>
+                  <tbody>
+                    {employees.map(emp => {
+                      const pkg = packages.find(p => p.id === selectedEmployeePackages.get(emp.id));
+                      const pctAmount = revenue * ((pkg?.percentage || 0) / 100);
+                      const total = emp.baseSalary + pctAmount;
+                      return (
+                        <tr key={emp.id} className="border-t border-neutral-700">
+                          <td className="px-3 py-2">{emp.name}</td>
+                          <td className="px-3 py-2">
+                            <select value={selectedEmployeePackages.get(emp.id) || ""} onChange={(e) => handleAssignPackage(emp.id, Number(e.target.value))} className="bg-neutral-700 px-2 py-1 rounded text-sm">
+                              <option value="">Chọn</option>
+                              {packages.map(p => <option key={p.id} value={p.id}>{p.percentage}%</option>)}
+                            </select>
+                          </td>
+                          <td className="px-3 py-2 text-right">{emp.baseSalary.toLocaleString("vi-VN")}đ</td>
+                          <td className="px-3 py-2 text-right">{pctAmount.toLocaleString("vi-VN")}đ</td>
+                          <td className="px-3 py-2 text-right font-semibold text-emerald-400">{total.toLocaleString("vi-VN")}đ</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "attendance" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Chấm công</h2>
+              <div className="bg-neutral-800 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-neutral-700">
+                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Ngày</th><th className="px-3 py-2 text-left">Giờ vào</th><th className="px-3 py-2 text-left">Giờ ra</th><th className="px-3 py-2 text-left">Trạng thái</th></tr>
+                  </thead>
+                  <tbody>
+                    {mockAttendance.map(a => {
+                      const emp = employees.find(e => e.id === a.employeeId);
+                      return (
+                        <tr key={a.id} className="border-t border-neutral-700">
+                          <td className="px-3 py-2">{emp?.name}</td>
+                          <td className="px-3 py-2">{a.date}</td>
+                          <td className="px-3 py-2">{a.checkIn}</td>
+                          <td className="px-3 py-2">{a.checkOut}</td>
+                          <td className={`px-3 py-2 ${a.status === "present" ? "text-green-400" : a.status === "late" ? "text-yellow-400" : "text-red-400"}`}>
+                            {a.status === "present" ? "Đúng giờ" : a.status === "late" ? "Muộn" : "Nghỉ"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "insurance" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Bảo hiểm xã hội</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                  <div className="text-neutral-400 text-sm">Tổng NV tham gia BHXH</div>
+                  <div className="text-2xl font-bold">{employees.filter(e => e.contractType === "HĐLĐ").length}</div>
+                </div>
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                  <div className="text-neutral-400 text-sm">Tỷ lệ đóng</div>
+                  <div className="text-2xl font-bold">17%</div>
+                </div>
+              </div>
+              <div className="bg-neutral-800 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-neutral-700">
+                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Mã BHXH</th><th className="px-3 py-2 text-left">Trạng thái</th></tr>
+                  </thead>
+                  <tbody>
+                    {employees.filter(e => e.contractType === "HĐLĐ").map(emp => (
+                      <tr key={emp.id} className="border-t border-neutral-700">
+                        <td className="px-3 py-2">{emp.name}</td>
+                        <td className="px-3 py-2">BHXH-{emp.id.toString().padStart(6, "0")}</td>
+                        <td className="px-3 py-2 text-green-400">Đang tham gia</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "finance" && (
+            <section>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Thu chi</h2>
+                <button onClick={() => {}} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm</button>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                  <div className="text-neutral-400 text-sm">Tổng thu</div>
+                  <div className="text-2xl font-bold text-green-400">{totalIncome.toLocaleString("vi-VN")}đ</div>
+                </div>
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                  <div className="text-neutral-400 text-sm">Tổng chi</div>
+                  <div className="text-2xl font-bold text-red-400">{totalExpense.toLocaleString("vi-VN")}đ</div>
+                </div>
+              </div>
+              <div className="bg-neutral-800 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-neutral-700">
+                    <tr><th className="px-3 py-2 text-left">Ngày</th><th className="px-3 py-2 text-left">Loại</th><th className="px-3 py-2 text-left">Mô tả</th><th className="px-3 py-2 text-right">Số tiền</th></tr>
+                  </thead>
+                  <tbody>
+                    {finance.map(f => (
+                      <tr key={f.id} className="border-t border-neutral-700">
+                        <td className="px-3 py-2">{f.date}</td>
+                        <td className={`px-3 py-2 ${f.type === "income" ? "text-green-400" : "text-red-400"}`}>
+                          {f.type === "income" ? "Thu" : "Chi"}
+                        </td>
+                        <td className="px-3 py-2">{f.description}</td>
+                        <td className="px-3 py-2 text-right">{f.amount.toLocaleString("vi-VN")}đ</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "performance" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Đánh giá hiệu suất</h2>
+              <div className="bg-neutral-800 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-neutral-700">
+                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Xếp loại</th><th className="px-3 py-2 text-left">Ghi chú</th></tr>
+                  </thead>
+                  <tbody>
+                    {employees.map(emp => {
+                      const rating = emp.baseSalary >= 7000000 ? 5 : emp.baseSalary >= 5000000 ? 4 : 3;
+                      const stars = "⭐".repeat(rating);
+                      const notes = rating >= 4 ? "Xuất sắc" : rating >= 3 ? "Hoàn thành tốt" : "Cần cải thiện";
+                      return (
+                        <tr key={emp.id} className="border-t border-neutral-700">
+                          <td className="px-3 py-2">{emp.name}</td>
+                          <td className="px-3 py-2 text-yellow-400">{stars}</td>
+                          <td className="px-3 py-2 text-neutral-400">{notes}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "reports" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Báo cáo</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                  <div className="font-semibold mb-2">Tổng nhân viên</div>
+                  <div className="text-3xl font-bold text-emerald-400">{employees.length}</div>
+                </div>
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                  <div className="font-semibold mb-2">Tổng quỹ lương</div>
+                  <div className="text-3xl font-bold text-emerald-400">
+                    {employees.reduce((sum, e) => sum + e.baseSalary, 0).toLocaleString("vi-VN")}đ
+                  </div>
+                </div>
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                  <div className="font-semibold mb-2">Doanh thu tháng</div>
+                  <div className="text-3xl font-bold text-emerald-400">{revenue.toLocaleString("vi-VN")}đ</div>
+                </div>
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                  <div className="font-semibold mb-2">Lợi nhuận ước tính</div>
+                  <div className="text-3xl font-bold text-green-400">
+                    {(revenue - totalExpense - employees.reduce((sum, e) => sum + e.baseSalary, 0)).toLocaleString("vi-VN")}đ
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

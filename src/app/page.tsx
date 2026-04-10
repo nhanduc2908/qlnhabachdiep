@@ -347,33 +347,39 @@ export default function Home() {
     const bgGradient = darkMode 
       ? "background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)"
       : "background: radial-gradient(ellipse at center, #e0e7ff 0%, #f1f5f9 100%)";
+    const roles = [
+      { id: "admin", name: "Admin", icon: "👑", desc: "Quản lý toàn diện", color: "from-purple-600 to-indigo-600" },
+      { id: "manager", name: "Manager", icon: "🎯", desc: "Quản lý & Báo cáo", color: "from-violet-600 to-purple-600" },
+      { id: "user", name: "User", icon: "👤", desc: "Nhân viên", color: "from-emerald-600 to-teal-600" },
+    ];
     return (
       <div className="min-h-screen flex items-center justify-center" style={darkMode ? { background: '#0a0a0f' } : { background: '#f1f5f9' }}>
-        <div className="glass-card p-8 max-w-md w-full mx-4 text-center animate-fade-in">
-          <div className="text-5xl mb-4">🔮</div>
-          <h1 className={`text-2xl font-bold mb-2 ${darkMode ? 'gold-gradient' : 'text-purple-700'}`}>Bách Diệp Cổ Trấn</h1>
-          <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Quản lý nhân viên, khách hàng & 10+ kỹ năng bói toán</p>
+        <div className="glass-card p-10 max-w-lg w-full mx-4 text-center animate-fade-in">
+          <div className="text-6xl mb-4">🔮</div>
+          <h1 className={`text-3xl font-bold mb-2 ${darkMode ? 'gold-gradient' : 'text-purple-700'}`}>Bách Diệp Cổ Trấn</h1>
+          <p className={`mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Hệ thống quản lý nhân viên & bói toán</p>
           
-          <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Chọn vai trò để tiếp tục:</p>
+          <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>🗝️ Đăng nhập hệ thống - Chọn vai trò của bạn:</p>
           
-          <div className="space-y-3 mb-6">
-            <button onClick={() => { setCurrentRole("admin"); setShowLogin(false); }} className="w-full btn-glow py-3 text-lg">
-              👑 <span className="font-semibold">Admin</span>
-              <span className="block text-xs font-normal opacity-70">Toàn quyền quản lý</span>
-            </button>
-            <button onClick={() => { setCurrentRole("manager"); setShowLogin(false); }} className="w-full btn-glow py-3 text-lg">
-              🎯 <span className="font-semibold">Manager</span>
-              <span className="block text-xs font-normal opacity-70">Quản lý & Báo cáo</span>
-            </button>
-            <button onClick={() => { setCurrentRole("user"); setShowLogin(false); }} className="w-full btn-glow py-3 text-lg">
-              👤 <span className="font-semibold">User</span>
-              <span className="block text-xs font-normal opacity-70">Xem thông tin cá nhân</span>
-            </button>
+          <div className="grid grid-cols-1 gap-4 mb-8">
+            {roles.map((role) => (
+              <button 
+                key={role.id} 
+                onClick={() => { setCurrentRole(role.id as Role); setShowLogin(false); }} 
+                className={`w-full p-4 rounded-xl bg-gradient-to-r ${role.color} hover:opacity-90 transition-all transform hover:scale-105 text-white`}
+              >
+                <div className="text-2xl mb-1">{role.icon}</div>
+                <div className="text-lg font-bold">{role.name}</div>
+                <div className="text-xs opacity-80">{role.desc}</div>
+              </button>
+            ))}
           </div>
 
-          <button onClick={() => setDarkMode(!darkMode)} className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-            {darkMode ? '☀️ Chế độ ban ngày' : '🌙 Chế độ ban đêm'}
-          </button>
+          <div className="flex justify-center gap-4 pt-4 border-t" style={{ borderColor: darkMode ? '#333' : '#ddd' }}>
+            <button onClick={() => setDarkMode(!darkMode)} className={`text-sm ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
+              {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            </button>
+          </div>
         </div>
       </div>
     );

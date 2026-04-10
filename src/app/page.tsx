@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "insurance" | "performance";
+type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "performance";
 
 interface Employee {
   id: number;
@@ -79,7 +79,6 @@ const menuItems = [
   { id: "packages", label: "💰 Gói lương %", icon: "💰" },
   { id: "salary", label: "🧮 Tính lương", icon: "🧮" },
   { id: "attendance", label: "📅 Chấm công", icon: "📅" },
-  { id: "insurance", label: "🏥 BHXH", icon: "🏥" },
   { id: "finance", label: "💵 Thu chi", icon: "💵" },
   { id: "performance", label: "⭐ Đánh giá", icon: "⭐" },
   { id: "reports", label: "📊 Báo cáo", icon: "📊" },
@@ -481,38 +480,6 @@ export default function Home() {
                         </tr>
                       );
                     })}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          )}
-
-          {selectedTab === "insurance" && (
-            <section>
-              <h2 className="text-xl font-semibold mb-4">Bảo hiểm xã hội</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="bg-neutral-800 p-4 rounded-lg">
-                  <div className="text-neutral-400 text-sm">Tổng NV tham gia BHXH</div>
-                  <div className="text-2xl font-bold">{employees.filter(e => e.contractType === "HĐLĐ").length}</div>
-                </div>
-                <div className="bg-neutral-800 p-4 rounded-lg">
-                  <div className="text-neutral-400 text-sm">Tỷ lệ đóng</div>
-                  <div className="text-2xl font-bold">17%</div>
-                </div>
-              </div>
-              <div className="bg-neutral-800 rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">NV</th><th className="px-3 py-2 text-left">Mã BHXH</th><th className="px-3 py-2 text-left">Trạng thái</th></tr>
-                  </thead>
-                  <tbody>
-                    {employees.filter(e => e.contractType === "HĐLĐ").map(emp => (
-                      <tr key={emp.id} className="border-t border-neutral-700">
-                        <td className="px-3 py-2">{emp.name}</td>
-                        <td className="px-3 py-2">BHXH-{emp.id.toString().padStart(6, "0")}</td>
-                        <td className="px-3 py-2 text-green-400">Đang tham gia</td>
-                      </tr>
-                    ))}
                   </tbody>
                 </table>
               </div>

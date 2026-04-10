@@ -1,1 +1,213 @@
 @import "tailwindcss";
+
+:root {
+  --bg-dark: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-card-hover: #1a1a25;
+  --primary: #a855f7;
+  --primary-hover: #9333ea;
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --text: #fafafa;
+  --text-muted: #a1a1aa;
+  --border: #27272a;
+  --border-light: #3f3f46;
+}
+
+body {
+  background: var(--bg-dark);
+  background-image: 
+    radial-gradient(ellipse at 20% 0%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+  min-height: 100vh;
+  color: var(--text);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(18, 18, 26, 0.9), rgba(10, 10, 15, 0.95));
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
+}
+
+.btn-glow {
+  background: linear-gradient(135deg, var(--primary), #7c3aed);
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.2) 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-glow:hover::before {
+  opacity: 1;
+}
+
+.btn-outline {
+  background: rgba(18, 18, 26, 0.8);
+  border: 1px solid var(--border-light);
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  border-color: var(--primary);
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.form-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-light);
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+  outline: none;
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24, #fcd34d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.purple-gradient {
+  background: linear-gradient(135deg, #a855f7, #c084fc, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sidebar-link {
+  padding: 0.75rem 1rem;
+  border-radius: 0.625rem;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  transform: scaleY(0);
+  transition: transform 0.25s ease;
+  border-radius: 0 3px 3px 0;
+}
+
+.sidebar-link:hover {
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.sidebar-link.active {
+  background: rgba(168, 85, 247, 0.15);
+  color: var(--primary);
+}
+
+.sidebar-link.active::before {
+  transform: scaleY(1);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.table-row:hover {
+  background: rgba(168, 85, 247, 0.05);
+}
+
+.table-header {
+  background: linear-gradient(90deg, var(--primary), #7c3aed);
+  color: white;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--bg-card), #0f0f14);
+  border: 1px solid var(--border-light);
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(30%, -30%);
+}
+
+.stat-value {
+  background: linear-gradient(135deg, #a855f7, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

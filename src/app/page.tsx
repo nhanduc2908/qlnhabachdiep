@@ -191,38 +191,48 @@ export default function Home() {
   const totalExpense = finance.filter(f => f.type === "expense").reduce((sum, f) => sum + f.amount, 0);
 
   return (
-    <div className="flex min-h-screen bg-neutral-900">
-      <aside className="w-64 bg-neutral-800 p-4 hidden md:block">
-        <div className="mb-6">
-          <h1 className="text-xl font-bold text-emerald-400">Bách Diệp</h1>
-          <p className="text-xs text-neutral-400">Cổ Trấn</p>
+    <div className="flex min-h-screen" style={{ background: '#0a0a0f' }}>
+      <aside className="w-64 p-4 hidden md:block" style={{ background: '#12121a', borderRight: '1px solid #27272a' }}>
+        <div className="mb-8 text-center pt-4">
+          <div className="text-3xl mb-2">🔮</div>
+          <h1 className="text-2xl font-bold gold-gradient">Bách Diệp</h1>
+          <p className="text-xs purple-gradient font-medium">Cổ Trấn</p>
         </div>
-        <nav className="space-y-1">
+        <nav className="space-y-2">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setSelectedTab(item.id as Tab)}
-              className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                selectedTab === item.id ? "bg-emerald-600 text-white" : "text-neutral-300 hover:bg-neutral-700"
+              className={`w-full text-left sidebar-link ${
+                selectedTab === item.id ? "active" : "text-gray-400"
               }`}
             >
-              {item.label}
+              <span className="mr-2">{item.icon}</span>
+              {item.label.split(" ")[1]}
             </button>
           ))}
         </nav>
+        <div className="mt-8 pt-4 border-t" style={{ borderColor: '#27272a' }}>
+          <p className="text-xs text-center text-gray-500">✨ Quản lý & Tính lương</p>
+        </div>
       </aside>
 
-      <main className="flex-1 p-4 md:p-8 text-white overflow-auto">
-        <div className="max-w-5xl mx-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-auto">
+        <div className="max-w-6xl mx-auto">
           <header className="md:hidden mb-6">
-            <h1 className="text-2xl font-bold text-emerald-400">Bách Diệp Cổ Trấn</h1>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl">🔮</span>
+              <div>
+                <h1 className="text-xl font-bold gold-gradient">Bách Diệp Cổ Trấn</h1>
+              </div>
+            </div>
             <nav className="flex gap-2 mt-3 overflow-x-auto pb-2">
               {menuItems.slice(0, 5).map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setSelectedTab(item.id as Tab)}
-                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${
-                    selectedTab === item.id ? "bg-emerald-600" : "bg-neutral-800"
+                  className={`px-3 py-2 rounded-lg text-sm whitespace-nowrap ${
+                    selectedTab === item.id ? "btn-glow" : "btn-outline"
                   }`}
                 >
                   {item.icon} {item.label.split(" ")[1]}
@@ -232,52 +242,52 @@ export default function Home() {
           </header>
 
           {selectedTab === "employees" && (
-            <section>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Danh sách nhân viên</h2>
-                <button onClick={() => { resetForms(); setShowAddForm(true); }} className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm">
+            <section className="animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold">👥 <span className="purple-gradient">Danh sách nhân viên</span></h2>
+                <button onClick={() => { resetForms(); setShowAddForm(true); }} className="btn-glow px-5 py-2.5 text-sm">
                   + Thêm NV
                 </button>
               </div>
               {showAddForm && (
-                <div className="bg-neutral-800 p-4 rounded-lg mb-4">
-                  <h3 className="font-semibold mb-3">{editingId ? "Sửa nhân viên" : "Thêm nhân viên mới"}</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <input type="text" placeholder="Họ tên" value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
-                    <input type="text" placeholder="Chức vụ" value={newEmployee.position} onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
-                    <input type="text" placeholder="Số điện thoại" value={newEmployee.phone} onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
-                    <input type="date" value={newEmployee.startDate} onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg" />
-                    <select value={newEmployee.department} onChange={(e) => setNewEmployee({ ...newEmployee, department: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg">
+                <div className="glass-card p-6 mb-6 animate-fade-in">
+                  <h3 className="font-semibold mb-4 gold-gradient text-lg">{editingId ? "✏️ Sửa nhân viên" : "➕ Thêm nhân viên mới"}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" placeholder="Họ tên" value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} className="form-input px-4 py-3" />
+                    <input type="text" placeholder="Chức vụ" value={newEmployee.position} onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })} className="form-input px-4 py-3" />
+                    <input type="text" placeholder="Số điện thoại" value={newEmployee.phone} onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} className="form-input px-4 py-3" />
+                    <input type="date" value={newEmployee.startDate} onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })} className="form-input px-4 py-3" />
+                    <select value={newEmployee.department} onChange={(e) => setNewEmployee({ ...newEmployee, department: e.target.value })} className="form-input px-4 py-3">
                       <option value="">Chọn phòng ban</option>
                       {departments.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
-                    <select value={newEmployee.contractType} onChange={(e) => setNewEmployee({ ...newEmployee, contractType: e.target.value })} className="bg-neutral-700 px-3 py-2 rounded-lg">
+                    <select value={newEmployee.contractType} onChange={(e) => setNewEmployee({ ...newEmployee, contractType: e.target.value })} className="form-input px-4 py-3">
                       <option value="">Loại hợp đồng</option>
                       {mockContracts.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
-                  <div className="flex gap-2 mt-3">
-                    <button onClick={handleAddEmployee} className="bg-emerald-600 px-4 py-2 rounded-lg">Lưu</button>
-                    <button onClick={resetForms} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
+                  <div className="flex gap-3 mt-5">
+                    <button onClick={handleAddEmployee} className="btn-glow px-6 py-2.5">💾 Lưu</button>
+                    <button onClick={resetForms} className="btn-outline px-6 py-2.5">Huỷ</button>
                   </div>
                 </div>
               )}
-              <div className="bg-neutral-800 rounded-lg overflow-hidden">
+              <div className="glass-card overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="bg-neutral-700">
-                    <tr><th className="px-3 py-2 text-left">Tên</th><th className="px-3 py-2 text-left">Chức vụ</th><th className="px-3 py-2 text-left">Phòng ban</th><th className="px-3 py-2 text-left">Ngày vào</th><th className="px-3 py-2 text-center">TT</th><th className="px-3 py-2 text-center">Thao tác</th></tr>
+                  <thead className="table-header">
+                    <tr><th className="px-4 py-3 text-left">Tên</th><th className="px-4 py-3 text-left">Chức vụ</th><th className="px-4 py-3 text-left">Phòng ban</th><th className="px-4 py-3 text-left">Ngày vào</th><th className="px-4 py-3 text-center">TT</th><th className="px-4 py-3 text-center">Thao tác</th></tr>
                   </thead>
                   <tbody>
                     {employees.map(emp => (
-                      <tr key={emp.id} className="border-t border-neutral-700">
-                        <td className="px-3 py-2">{emp.name}</td>
-                        <td className="px-3 py-2">{emp.position}</td>
-                        <td className="px-3 py-2">{emp.department}</td>
-                        <td className="px-3 py-2">{emp.startDate}</td>
-                        <td className="px-3 py-2 text-center"><span className="text-green-400 text-xs">Đang hoạt động</span></td>
-                        <td className="px-3 py-2 text-center">
-                          <button onClick={() => handleEditEmployee(emp)} className="text-blue-400 text-xs mr-2">Sửa</button>
-                          <button onClick={() => handleDeleteEmployee(emp.id)} className="text-red-400 text-xs">Xóa</button>
+                      <tr key={emp.id} className="table-row">
+                        <td className="px-4 py-3 font-medium">{emp.name}</td>
+                        <td className="px-4 py-3">{emp.position}</td>
+                        <td className="px-4 py-3">{emp.department}</td>
+                        <td className="px-4 py-3">{emp.startDate}</td>
+                        <td className="px-4 py-3 text-center"><span className="badge text-xs">Hoạt động</span></td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={() => handleEditEmployee(emp)} className="text-purple-400 hover:text-purple-300 text-xs mr-3 font-medium">✏️ Sửa</button>
+                          <button onClick={() => handleDeleteEmployee(emp.id)} className="text-red-400 hover:text-red-300 text-xs">🗑️</button>
                         </td>
                       </tr>
                     ))}
@@ -288,10 +298,10 @@ export default function Home() {
           )}
 
           {selectedTab === "departments" && (
-            <section>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Phòng ban</h2>
-                <button onClick={() => setShowDeptForm(true)} className="bg-emerald-600 px-4 py-2 rounded-lg text-sm">+ Thêm PB</button>
+<section className="animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold">🏢 <span className="purple-gradient">Phòng ban</span></h2>
+                <button onClick={() => setShowDeptForm(true)} className="btn-glow px-4 py-2 text-sm">+ Thêm PB</button>
               </div>
               {showDeptForm && (
                 <div className="bg-neutral-800 p-4 rounded-lg mb-4 flex gap-2">
@@ -300,14 +310,14 @@ export default function Home() {
                   <button onClick={() => setShowDeptForm(false)} className="bg-neutral-700 px-4 py-2 rounded-lg">Hủy</button>
                 </div>
               )}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {departments.map(dept => (
-                  <div key={dept} className="bg-neutral-800 p-4 rounded-lg flex justify-between items-center">
+                  <div key={dept} className="stat-card p-5 flex justify-between items-center">
                     <div>
-                      <div className="font-semibold">{dept}</div>
-                      <div className="text-neutral-400 text-sm">{employees.filter(e => e.department === dept).length} nhân viên</div>
+                      <div className="font-semibold text-lg">{dept}</div>
+                      <div className="text-sm text-gray-400">{employees.filter(e => e.department === dept).length} nhân viên</div>
                     </div>
-                    <button onClick={() => handleDeleteDept(dept)} className="text-red-400 text-xs">Xóa</button>
+                    <button onClick={() => handleDeleteDept(dept)} className="text-red-400 hover:text-red-300 p-2">🗑️</button>
                   </div>
                 ))}
               </div>
@@ -381,13 +391,13 @@ export default function Home() {
           )}
 
           {selectedTab === "salary" && (
-            <section>
-              <h2 className="text-xl font-semibold mb-4">Tính lương theo %gói</h2>
-              <div className="bg-neutral-800 p-4 rounded-lg mb-4">
-                <label className="block mb-2">Tổng doanh thu tháng</label>
-                <input type="number" value={revenue} onChange={(e) => setRevenue(Number(e.target.value))} className="bg-neutral-700 px-3 py-2 rounded-lg w-full md:w-64" />
-                <p className="text-emerald-400 text-lg mt-1">Doanh thu: {revenue.toLocaleString("vi-VN")}đ</p>
-                <p className="text-neutral-400 text-sm">Công thức: Lương = Doanh thu × %gói</p>
+            <section className="animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-6">🧮 <span className="purple-gradient">Tính lương theo %gói</span></h2>
+              <div className="glass-card p-6 mb-6">
+                <label className="block mb-3 text-gray-400">Tổng doanh thu tháng</label>
+                <input type="number" value={revenue} onChange={(e) => setRevenue(Number(e.target.value))} className="form-input px-4 py-3 w-full md:w-72 text-lg" />
+                <p className="gold-gradient text-xl mt-3 font-semibold">💰 {revenue.toLocaleString("vi-VN")}đ</p>
+                <p className="text-gray-500 text-sm mt-2">✨ Công thức: Lương = Doanh thu × %gói</p>
               </div>
               <div className="bg-neutral-800 rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
@@ -573,29 +583,29 @@ export default function Home() {
           )}
 
           {selectedTab === "reports" && (
-            <section>
-              <h2 className="text-xl font-semibold mb-4">Báo cáo</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-neutral-800 p-4 rounded-lg">
-                  <div className="font-semibold mb-2">Tổng nhân viên</div>
-                  <div className="text-3xl font-bold text-emerald-400">{employees.length}</div>
+            <section className="animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-6">📊 <span className="purple-gradient">Báo cáo tổng hợp</span></h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="stat-card p-6 text-center">
+                  <div className="text-gray-400 mb-2">👥 Tổng nhân viên</div>
+                  <div className="stat-value text-5xl">{employees.length}</div>
                 </div>
-                <div className="bg-neutral-800 p-4 rounded-lg">
-                  <div className="font-semibold mb-2">Tổng lương (%gói)</div>
-                  <div className="text-3xl font-bold text-emerald-400">
+                <div className="stat-card p-6 text-center">
+                  <div className="text-gray-400 mb-2">💰 Tổng lương (%gói)</div>
+                  <div className="stat-value text-3xl">
                     {employees.reduce((sum, e) => {
                       const pkg = packages.find(p => p.id === selectedEmployeePackages.get(e.id));
                       return sum + (revenue * ((pkg?.percentage || 0) / 100));
                     }, 0).toLocaleString("vi-VN")}đ
                   </div>
                 </div>
-                <div className="bg-neutral-800 p-4 rounded-lg">
-                  <div className="font-semibold mb-2">Doanh thu tháng</div>
-                  <div className="text-3xl font-bold text-emerald-400">{revenue.toLocaleString("vi-VN")}đ</div>
+                <div className="stat-card p-6 text-center">
+                  <div className="text-gray-400 mb-2">📈 Doanh thu tháng</div>
+                  <div className="gold-gradient text-3xl">{revenue.toLocaleString("vi-VN")}đ</div>
                 </div>
-                <div className="bg-neutral-800 p-4 rounded-lg">
-                  <div className="font-semibold mb-2">Lợi nhuận ước tính</div>
-                  <div className="text-3xl font-bold text-green-400">
+                <div className="stat-card p-6 text-center">
+                  <div className="text-gray-400 mb-2">🎯 Lợi nhuận ước tính</div>
+                  <div className="text-3xl" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                     {(revenue - totalExpense - employees.reduce((sum, e) => {
                       const pkg = packages.find(p => p.id === selectedEmployeePackages.get(e.id));
                       return sum + (revenue * ((pkg?.percentage || 0) / 100));

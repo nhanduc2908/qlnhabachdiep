@@ -1,19 +1,15 @@
-# Active Context: Next.js Starter Template
+# Active Context: Bách Diệp Employee Management
 
-## Current State
+## Application Status
 
-**Template Status**: ✅ Ready for development
-
-The template is a clean Next.js 16 starter with TypeScript and Tailwind CSS 4. It's ready for AI-assisted expansion to build any type of application.
+**Status**: ✅ Employee management with salary calculation for Bách Diệp Cổ Trấn
 
 ## Recently Completed
 
-- [x] Base Next.js 16 setup with App Router
-- [x] TypeScript configuration with strict mode
-- [x] Tailwind CSS 4 integration
-- [x] ESLint configuration
-- [x] Memory bank documentation
-- [x] Recipe system for common features
+- [x] Database with Drizzle ORM + SQLite (employees, salary_packages, employee_packages, salary_records)
+- [x] Employee management UI (list, add, delete)
+- [x] Salary package management (% packages)
+- [x] Salary calculation with percentage-based packages
 
 ## Current Structure
 

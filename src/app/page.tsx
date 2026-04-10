@@ -88,6 +88,7 @@ export default function Home() {
   const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
   const [packages, setPackages] = useState<SalaryPackage[]>(mockPackages);
   const [selectedTab, setSelectedTab] = useState<Tab>("employees");
+  const [darkMode, setDarkMode] = useState(true);
   const [revenue, setRevenue] = useState<number>(50000000);
   const [selectedEmployeePackages, setSelectedEmployeePackages] = useState<Map<number, number>>(new Map());
   const [finance, setFinance] = useState<FinanceRecord[]>(mockFinanceInit);
@@ -191,21 +192,25 @@ export default function Home() {
   const totalExpense = finance.filter(f => f.type === "expense").reduce((sum, f) => sum + f.amount, 0);
 
   return (
-    <div className="flex min-h-screen" style={{ background: '#0a0a0f' }}>
-      <aside className="w-64 p-4 hidden md:block" style={{ background: '#12121a', borderRight: '1px solid #27272a' }}>
-        <div className="mb-8 text-center pt-4">
-          <div className="text-3xl mb-2">🔮</div>
-          <h1 className="text-2xl font-bold gold-gradient">Bách Diệp</h1>
-          <p className="text-xs purple-gradient font-medium">Cổ Trấn</p>
+    <div className={`flex min-h-screen ${darkMode ? '' : 'light-mode'}`} style={darkMode ? { background: '#0a0a0f' } : { background: '#f1f5f9' }}>
+      <aside className={`w-64 p-4 hidden md:block ${darkMode ? '' : 'light-sidebar'}`} style={darkMode ? { background: '#12121a', borderRight: '1px solid #27272a' } : { background: '#f8fafc', borderRight: '1px solid #e2e8f0' }}>
+        <div className="mb-6 text-center pt-4 flex justify-between items-center">
+          <div className="flex-1">
+            <div className="text-3xl mb-2">🔮</div>
+            <h1 className={`text-2xl font-bold ${darkMode ? 'gold-gradient' : 'text-purple-700'}`}>Bách Diệp</h1>
+            <p className={`text-xs font-medium ${darkMode ? 'purple-gradient' : 'text-purple-500'}`}>Cổ Trấn</p>
+          </div>
+          <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-lg ${darkMode ? 'bg-purple-900 text-yellow-400' : 'bg-purple-100 text-purple-700'} text-xl`}>
+            {darkMode ? '☀️' : '🌙'}
+          </button>
         </div>
         <nav className="space-y-2">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setSelectedTab(item.id as Tab)}
-              className={`w-full text-left sidebar-link ${
-                selectedTab === item.id ? "active" : "text-gray-400"
-              }`}
+              className={`w-full text-left sidebar-link ${selectedTab === item.id ? "active" : darkMode ? "text-gray-400" : "text-gray-600"}`}
+              style={darkMode ? {} : { color: '#475569' }}
             >
               <span className="mr-2">{item.icon}</span>
               {item.label.split(" ")[1]}
@@ -220,11 +225,16 @@ export default function Home() {
       <main className="flex-1 p-4 md:p-8 overflow-auto">
         <div className="max-w-6xl mx-auto">
           <header className="md:hidden mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl">🔮</span>
-              <div>
-                <h1 className="text-xl font-bold gold-gradient">Bách Diệp Cổ Trấn</h1>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🔮</span>
+                <div>
+                  <h1 className="text-xl font-bold gold-gradient">Bách Diệp Cổ Trấn</h1>
+                </div>
               </div>
+              <button onClick={() => setDarkMode(!darkMode)} className="btn-outline px-3 py-2 text-lg">
+                {darkMode ? '☀️' : '🌙'}
+              </button>
             </div>
             <nav className="flex gap-2 mt-3 overflow-x-auto pb-2">
               {menuItems.slice(0, 5).map((item) => (

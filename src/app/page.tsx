@@ -3,6 +3,43 @@
 import { useState } from "react";
 
 type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "performance";
+type Role = "admin" | "manager" | "user";
+
+interface RoleConfig {
+  canAdd: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canViewReports: boolean;
+  canViewFinance: boolean;
+  tabs: Tab[];
+}
+
+const rolePermissions: Record<Role, RoleConfig> = {
+  admin: {
+    canAdd: true,
+    canEdit: true,
+    canDelete: true,
+    canViewReports: true,
+    canViewFinance: true,
+    tabs: ["employees", "departments", "contracts", "packages", "salary", "attendance", "finance", "performance", "reports"],
+  },
+  manager: {
+    canAdd: true,
+    canEdit: true,
+    canDelete: false,
+    canViewReports: true,
+    canViewFinance: true,
+    tabs: ["employees", "contracts", "salary", "attendance", "finance", "performance", "reports"],
+  },
+  user: {
+    canAdd: false,
+    canEdit: false,
+    canDelete: false,
+    canViewReports: false,
+    canViewFinance: false,
+    tabs: ["employees", "salary", "attendance", "performance"],
+  },
+};
 
 interface Employee {
   id: number;
@@ -89,6 +126,8 @@ export default function Home() {
   const [packages, setPackages] = useState<SalaryPackage[]>(mockPackages);
   const [selectedTab, setSelectedTab] = useState<Tab>("employees");
   const [darkMode, setDarkMode] = useState(true);
+  const [currentRole, setCurrentRole] = useState<Role | null>(null);
+  const [showLogin, setShowLogin] = useState(true);
   const [revenue, setRevenue] = useState<number>(50000000);
   const [selectedEmployeePackages, setSelectedEmployeePackages] = useState<Map<number, number>>(new Map());
   const [finance, setFinance] = useState<FinanceRecord[]>(mockFinanceInit);
@@ -190,6 +229,44 @@ export default function Home() {
 
   const totalIncome = finance.filter(f => f.type === "income").reduce((sum, f) => sum + f.amount, 0);
   const totalExpense = finance.filter(f => f.type === "expense").reduce((sum, f) => sum + f.amount, 0);
+  const permissions = currentRole ? rolePermissions[currentRole] : null;
+  const userTabs = permissions?.tabs || [];
+
+  if (showLogin || !currentRole) {
+    const bgGradient = darkMode 
+      ? "background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)"
+      : "background: radial-gradient(ellipse at center, #e0e7ff 0%, #f1f5f9 100%)";
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={darkMode ? { background: '#0a0a0f' } : { background: '#f1f5f9' }}>
+        <div className="glass-card p-8 max-w-md w-full mx-4 text-center animate-fade-in">
+          <div className="text-5xl mb-4">🔮</div>
+          <h1 className={`text-2xl font-bold mb-2 ${darkMode ? 'gold-gradient' : 'text-purple-700'}`}>Bách Diệp Cổ Trấn</h1>
+          <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Quản lý nhân viên & Tính lương</p>
+          
+          <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Chọn vai trò để tiếp tục:</p>
+          
+          <div className="space-y-3 mb-6">
+            <button onClick={() => { setCurrentRole("admin"); setShowLogin(false); }} className="w-full btn-glow py-3 text-lg">
+              👑 <span className="font-semibold">Admin</span>
+              <span className="block text-xs font-normal opacity-70">Toàn quyền quản lý</span>
+            </button>
+            <button onClick={() => { setCurrentRole("manager"); setShowLogin(false); }} className="w-full btn-glow py-3 text-lg">
+              🎯 <span className="font-semibold">Manager</span>
+              <span className="block text-xs font-normal opacity-70">Quản lý & Báo cáo</span>
+            </button>
+            <button onClick={() => { setCurrentRole("user"); setShowLogin(false); }} className="w-full btn-glow py-3 text-lg">
+              👤 <span className="font-semibold">User</span>
+              <span className="block text-xs font-normal opacity-70">Xem thông tin cá nhân</span>
+            </button>
+          </div>
+
+          <button onClick={() => setDarkMode(!darkMode)} className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            {darkMode ? '☀️ Chế độ ban ngày' : '🌙 Chế độ ban đêm'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex min-h-screen ${darkMode ? '' : 'light-mode'}`} style={darkMode ? { background: '#0a0a0f' } : { background: '#f1f5f9' }}>
@@ -205,7 +282,7 @@ export default function Home() {
           </button>
         </div>
         <nav className="space-y-2">
-          {menuItems.map((item) => (
+          {menuItems.filter(item => userTabs.includes(item.id as Tab)).map((item) => (
             <button
               key={item.id}
               onClick={() => setSelectedTab(item.id as Tab)}
@@ -217,6 +294,11 @@ export default function Home() {
             </button>
           ))}
         </nav>
+        <div className="mt-8 pt-4 border-t" style={{ borderColor: '#27272a' }}>
+          <button onClick={() => { setCurrentRole(null); setShowLogin(true); }} className={`w-full text-left text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'} hover:text-red-400`}>
+            🚪 Đăng xuất
+          </button>
+        </div>
         <div className="mt-8 pt-4 border-t" style={{ borderColor: '#27272a' }}>
           <p className="text-xs text-center text-gray-500">✨ Quản lý & Tính lương</p>
         </div>
@@ -255,9 +337,11 @@ export default function Home() {
             <section className="animate-fade-in">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-semibold">👥 <span className="purple-gradient">Danh sách nhân viên</span></h2>
-                <button onClick={() => { resetForms(); setShowAddForm(true); }} className="btn-glow px-5 py-2.5 text-sm">
-                  + Thêm NV
-                </button>
+                {permissions?.canAdd && (
+                  <button onClick={() => { resetForms(); setShowAddForm(true); }} className="btn-glow px-5 py-2.5 text-sm">
+                    + Thêm NV
+                  </button>
+                )}
               </div>
               {showAddForm && (
                 <div className="glass-card p-6 mb-6 animate-fade-in">
@@ -592,7 +676,7 @@ export default function Home() {
             </section>
           )}
 
-          {selectedTab === "reports" && (
+          {selectedTab === "reports" && permissions?.canViewReports && (
             <section className="animate-fade-in">
               <h2 className="text-2xl font-semibold mb-6">📊 <span className="purple-gradient">Báo cáo tổng hợp</span></h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

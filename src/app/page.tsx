@@ -54,6 +54,7 @@ interface RoleConfig {
   canDelete: boolean;
   canViewReports: boolean;
   canViewFinance: boolean;
+  canEditSalary: boolean;
   tabs: Tab[];
 }
 
@@ -64,6 +65,7 @@ const rolePermissions: Record<Role, RoleConfig> = {
     canDelete: true,
     canViewReports: true,
     canViewFinance: true,
+    canEditSalary: true,
     tabs: ["employees", "departments", "contracts", "packages", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services", "inventory", "reviews"],
   },
   manager: {
@@ -72,6 +74,7 @@ const rolePermissions: Record<Role, RoleConfig> = {
     canDelete: false,
     canViewReports: true,
     canViewFinance: true,
+    canEditSalary: true,
     tabs: ["employees", "contracts", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services"],
   },
   user: {
@@ -80,6 +83,7 @@ const rolePermissions: Record<Role, RoleConfig> = {
     canDelete: false,
     canViewReports: false,
     canViewFinance: false,
+    canEditSalary: false,
     tabs: ["employees", "salary", "attendance", "performance", "reviews"],
   },
 };
@@ -613,10 +617,16 @@ export default function Home() {
                         <tr key={emp.id} className="border-t border-neutral-700">
                           <td className="px-3 py-2">{emp.name}</td>
                           <td className="px-3 py-2">
-                            <select value={selectedEmployeePackages.get(emp.id) || ""} onChange={(e) => handleAssignPackage(emp.id, Number(e.target.value))} className="bg-neutral-700 px-2 py-1 rounded text-sm">
-                              <option value="">Chọn</option>
-                              {packages.map(p => <option key={p.id} value={p.id}>{p.percentage}% - {p.name}</option>)}
-                            </select>
+                            {permissions?.canEditSalary ? (
+                              <select value={selectedEmployeePackages.get(emp.id) || ""} onChange={(e) => handleAssignPackage(emp.id, Number(e.target.value))} className="bg-neutral-700 px-2 py-1 rounded text-sm">
+                                <option value="">Chọn</option>
+                                {packages.map(p => <option key={p.id} value={p.id}>{p.percentage}% - {p.name}</option>)}
+                              </select>
+                            ) : (
+                              <span className="text-purple-400 font-medium">
+                                {pkg ? `${pkg.percentage}% - ${pkg.name}` : "Chưa gán"}
+                              </span>
+                            )}
                           </td>
                           <td className="px-3 py-2 text-neutral-400">{revenue.toLocaleString("vi-VN")}đ × {percent}%</td>
                           <td className="px-3 py-2 text-right font-semibold text-emerald-400">{salary.toLocaleString("vi-VN")}đ</td>

@@ -31,7 +31,7 @@ const rolePermissions: Record<Role, RoleConfig> = {
     canViewReports: true,
     canViewFinance: true,
     canEditSalary: true,
-    tabs: ["employees", "departments", "contracts", "packages", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services", "inventory", "reviews", "accounts"],
+    tabs: ["employees", "departments", "contracts", "packages", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services", "reviews", "accounts"],
   },
   manager: {
     canAdd: true,
@@ -217,7 +217,6 @@ const menuItems = [
   { id: "customers", label: "🤝 Khách hàng", icon: "🤝" },
   { id: "bookings", label: "📅 Đặt lịch", icon: "📅" },
   { id: "services", label: "🔮 Dịch vụ", icon: "🔮" },
-  { id: "inventory", label: "📦 Kho", icon: "📦" },
   { id: "reviews", label: "💬 Đánh giá", icon: "💬" },
   { id: "accounts", label: "🔑 Tài khoản", icon: "🔑" },
 ];
@@ -964,31 +963,6 @@ export default function Home() {
                     <div className="text-sm text-gray-500 mt-1">{s.description}</div>
                   </div>
                 ))}
-              </div>
-            </section>
-          )}
-
-          {selectedTab === "inventory" && permissions?.canAdd && (
-            <section className="animate-fade-in">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">📦 <span className="purple-gradient">Kho vật tư</span></h2>
-                <button onClick={() => {}} className="btn-glow px-4 py-2 text-sm">+ Thêm</button>
-              </div>
-              <div className="glass-card overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="table-header">
-                    <tr><th className="px-4 py-3 text-left">Tên vật tư</th><th className="px-4 py-3 text-right">Số lượng</th><th className="px-4 py-3 text-left">Đơn vị</th></tr>
-                  </thead>
-                  <tbody>
-                    {inventory.map(i => (
-                      <tr key={i.id} className="table-row">
-                        <td className="px-4 py-3">{i.name}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-purple-400">{i.quantity}</td>
-                        <td className="px-4 py-3">{i.unit}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             </section>
           )}

@@ -2,8 +2,51 @@
 
 import { useState } from "react";
 
-type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "performance";
+type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "performance" | "customers" | "bookings" | "services" | "inventory" | "reviews";
 type Role = "admin" | "manager" | "user";
+
+interface Customer {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  note: string;
+  createdAt: string;
+}
+
+interface Booking {
+  id: number;
+  customerId: number;
+  employeeId: number;
+  service: string;
+  date: string;
+  time: string;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+}
+
+interface Service {
+  id: number;
+  name: string;
+  price: number;
+  duration: number;
+  description: string;
+}
+
+interface InventoryItem {
+  id: number;
+  name: string;
+  quantity: number;
+  unit: string;
+}
+
+interface Review {
+  id: number;
+  customerId: number;
+  employeeId: number;
+  rating: number;
+  comment: string;
+  date: string;
+}
 
 interface RoleConfig {
   canAdd: boolean;
@@ -21,7 +64,7 @@ const rolePermissions: Record<Role, RoleConfig> = {
     canDelete: true,
     canViewReports: true,
     canViewFinance: true,
-    tabs: ["employees", "departments", "contracts", "packages", "salary", "attendance", "finance", "performance", "reports"],
+    tabs: ["employees", "departments", "contracts", "packages", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services", "inventory", "reviews"],
   },
   manager: {
     canAdd: true,
@@ -29,7 +72,7 @@ const rolePermissions: Record<Role, RoleConfig> = {
     canDelete: false,
     canViewReports: true,
     canViewFinance: true,
-    tabs: ["employees", "contracts", "salary", "attendance", "finance", "performance", "reports"],
+    tabs: ["employees", "contracts", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services"],
   },
   user: {
     canAdd: false,
@@ -37,7 +80,7 @@ const rolePermissions: Record<Role, RoleConfig> = {
     canDelete: false,
     canViewReports: false,
     canViewFinance: false,
-    tabs: ["employees", "salary", "attendance", "performance"],
+    tabs: ["employees", "salary", "attendance", "performance", "reviews"],
   },
 };
 
@@ -95,6 +138,39 @@ const mockPackages: SalaryPackage[] = [
 const mockDepartmentsInit = ["Tarot", "Phong Thủy", "Bói Toán", "Xăm Bùa", "Lễ Tân", "Hướng Dẫn", "Kế Toán"];
 const mockContracts = ["HĐLĐ", "Thử việc", "Hợp đồng thời vụ"];
 
+const mockCustomers: Customer[] = [
+  { id: 1, name: "Khách hàng A", phone: "0987654321", email: "khachhangA@email.com", note: "Thường xuyên ghé", createdAt: "2024-01-10" },
+  { id: 2, name: "Khách hàng B", phone: "0987654322", email: "khachhangB@email.com", note: "Hỏi về Tarot", createdAt: "2024-02-15" },
+  { id: 3, name: "Khách hàng C", phone: "0987654323", email: "khachhangC@email.com", note: "Xem phong thủy", createdAt: "2024-03-20" },
+];
+
+const mockBookings: Booking[] = [
+  { id: 1, customerId: 1, employeeId: 1, service: "Xem Tarot", date: "2024-10-05", time: "10:00", status: "confirmed" },
+  { id: 2, customerId: 2, employeeId: 2, service: "Xem phong thủy", date: "2024-10-05", time: "14:00", status: "pending" },
+  { id: 3, customerId: 3, employeeId: 1, service: "Bói bài Tarot", date: "2024-10-06", time: "09:00", status: "completed" },
+];
+
+const mockServices: Service[] = [
+  { id: 1, name: "Xem Tarot 1 lá", price: 150000, duration: 15, description: "Xem 1 lá bài Tarot" },
+  { id: 2, name: "Xem Tarot 3 lá", price: 300000, duration: 30, description: "Xem 3 lá bài Tarot" },
+  { id: 3, name: "Xem phong thủy", price: 500000, duration: 45, description: "Xem hướng nhà" },
+  { id: 4, name: "Bói bài Tarot", price: 200000, duration: 20, description: "Bói bài Tình Yêu" },
+  { id: 5, name: "Xăm Bùa", price: 800000, duration: 60, description: "Xăm bùa may mắn" },
+];
+
+const mockInventory: InventoryItem[] = [
+  { id: 1, name: "Bài Tarot Rider-Waite", quantity: 10, unit: "bộ" },
+  { id: 2, name: "Nến thơm", quantity: 50, unit: "cây" },
+  { id: 3, name: "Trà mạn", quantity: 20, unit: "gói" },
+  { id: 4, name: "Vòng cầu may", quantity: 30, unit: "chiếc" },
+];
+
+const mockReviews: Review[] = [
+  { id: 1, customerId: 1, employeeId: 1, rating: 5, comment: "Rất chính xác!", date: "2024-10-01" },
+  { id: 2, customerId: 2, employeeId: 2, rating: 4, comment: "Tốt", date: "2024-10-02" },
+  { id: 3, customerId: 3, employeeId: 1, rating: 5, comment: "Cảm ơn Thầy!", date: "2024-10-03" },
+];
+
 const mockAttendanceInit: Attendance[] = [
   { id: 1, employeeId: 1, date: "2024-10-01", checkIn: "08:00", checkOut: "17:00", status: "present" },
   { id: 2, employeeId: 2, date: "2024-10-01", checkIn: "08:00", checkOut: "17:00", status: "present" },
@@ -119,6 +195,11 @@ const menuItems = [
   { id: "finance", label: "💵 Thu chi", icon: "💵" },
   { id: "performance", label: "⭐ Đánh giá", icon: "⭐" },
   { id: "reports", label: "📊 Báo cáo", icon: "📊" },
+  { id: "customers", label: "🤝 Khách hàng", icon: "🤝" },
+  { id: "bookings", label: "📅 Đặt lịch", icon: "📅" },
+  { id: "services", label: "🔮 Dịch vụ", icon: "🔮" },
+  { id: "inventory", label: "📦 Kho", icon: "📦" },
+  { id: "reviews", label: "💬 Đánh giá", icon: "💬" },
 ];
 
 export default function Home() {
@@ -133,6 +214,11 @@ export default function Home() {
   const [finance, setFinance] = useState<FinanceRecord[]>(mockFinanceInit);
   const [attendance, setAttendance] = useState<Attendance[]>(mockAttendanceInit);
   const [departments, setDepartments] = useState<string[]>(mockDepartmentsInit);
+  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  const [bookings, setBookings] = useState<Booking[]>(mockBookings);
+  const [services, setServices] = useState<Service[]>(mockServices);
+  const [inventory, setInventory] = useState<InventoryItem[]>(mockInventory);
+  const [reviews, setReviews] = useState<Review[]>(mockReviews);
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -214,6 +300,26 @@ export default function Home() {
   };
 
   const handleDeleteAttendance = (id: number) => setAttendance(attendance.filter(a => a.id !== id));
+
+  const handleAddCustomer = (customer: Omit<Customer, "id">) => {
+    setCustomers([...customers, { ...customer, id: customers.length + 1 }]);
+  };
+  const handleDeleteCustomer = (id: number) => setCustomers(customers.filter(c => c.id !== id));
+  
+  const handleAddBooking = (booking: Omit<Booking, "id">) => {
+    setBookings([...bookings, { ...booking, id: bookings.length + 1 }]);
+  };
+  const handleDeleteBooking = (id: number) => setBookings(bookings.filter(b => b.id !== id));
+  
+  const handleAddService = (service: Omit<Service, "id">) => {
+    setServices([...services, { ...service, id: services.length + 1 }]);
+  };
+  const handleDeleteService = (id: number) => setServices(services.filter(s => s.id !== id));
+  
+  const handleUpdateInventory = (id: number, qty: number) => {
+    setInventory(inventory.map(i => i.id === id ? { ...i, quantity: qty } : i));
+  };
+  const handleDeleteInventory = (id: number) => setInventory(inventory.filter(i => i.id !== id));
 
   const resetForms = () => {
     setNewEmployee({ name: "", position: "", phone: "", startDate: "", department: "", contractType: "" });
@@ -706,6 +812,133 @@ export default function Home() {
                     }, 0)).toLocaleString("vi-VN")}đ
                   </div>
                 </div>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "customers" && permissions?.canAdd && (
+            <section className="animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold">🤝 <span className="purple-gradient">Khách hàng</span></h2>
+                <button onClick={() => {}} className="btn-glow px-4 py-2 text-sm">+ Thêm KH</button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {customers.map(c => (
+                  <div key={c.id} className="stat-card p-5">
+                    <div className="font-semibold text-lg">{c.name}</div>
+                    <div className="text-sm text-gray-400">{c.phone}</div>
+                    <div className="text-sm text-gray-500">{c.email}</div>
+                    <div className="text-sm mt-2 text-gray-400">📝 {c.note}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "bookings" && permissions?.canAdd && (
+            <section className="animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold">📅 <span className="purple-gradient">Đặt lịch</span></h2>
+                <button onClick={() => {}} className="btn-glow px-4 py-2 text-sm">+ Thêm đặt lịch</button>
+              </div>
+              <div className="glass-card overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="table-header">
+                    <tr><th className="px-4 py-3 text-left">KH</th><th className="px-4 py-3 text-left">NV</th><th className="px-4 py-3 text-left">Dịch vụ</th><th className="px-4 py-3 text-left">Ngày</th><th className="px-4 py-3 text-left">Giờ</th><th className="px-4 py-3 text-left">TT</th></tr>
+                  </thead>
+                  <tbody>
+                    {bookings.map(b => {
+                      const cust = customers.find(c => c.id === b.customerId);
+                      const emp = employees.find(e => e.id === b.employeeId);
+                      return (
+                        <tr key={b.id} className="table-row">
+                          <td className="px-4 py-3">{cust?.name}</td>
+                          <td className="px-4 py-3">{emp?.name}</td>
+                          <td className="px-4 py-3">{b.service}</td>
+                          <td className="px-4 py-3">{b.date}</td>
+                          <td className="px-4 py-3">{b.time}</td>
+                          <td className="px-4 py-3">
+                            <span className={`badge ${b.status === 'completed' ? 'bg-green-500' : b.status === 'confirmed' ? 'bg-blue-500' : b.status === 'pending' ? 'bg-yellow-500' : 'bg-red-500'}`}>
+                              {b.status === 'confirmed' ? 'Xác nhận' : b.status === 'completed' ? 'Hoàn thành' : b.status === 'pending' ? 'Chờ' : 'Hủy'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "services" && permissions?.canAdd && (
+            <section className="animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold">🔮 <span className="purple-gradient">Dịch vụ</span></h2>
+                <button onClick={() => {}} className="btn-glow px-4 py-2 text-sm">+ Thêm DV</button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {services.map(s => (
+                  <div key={s.id} className="stat-card p-5">
+                    <div className="font-semibold text-lg">{s.name}</div>
+                    <div className="gold-gradient text-xl">{s.price.toLocaleString("vi-VN")}đ</div>
+                    <div className="text-sm text-gray-400">{s.duration} phút</div>
+                    <div className="text-sm text-gray-500 mt-1">{s.description}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "inventory" && permissions?.canAdd && (
+            <section className="animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold">📦 <span className="purple-gradient">Kho vật tư</span></h2>
+                <button onClick={() => {}} className="btn-glow px-4 py-2 text-sm">+ Thêm</button>
+              </div>
+              <div className="glass-card overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="table-header">
+                    <tr><th className="px-4 py-3 text-left">Tên vật tư</th><th className="px-4 py-3 text-right">Số lượng</th><th className="px-4 py-3 text-left">Đơn vị</th></tr>
+                  </thead>
+                  <tbody>
+                    {inventory.map(i => (
+                      <tr key={i.id} className="table-row">
+                        <td className="px-4 py-3">{i.name}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-purple-400">{i.quantity}</td>
+                        <td className="px-4 py-3">{i.unit}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "reviews" && (
+            <section className="animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-6">💬 <span className="purple-gradient">Đánh giá từ khách</span></h2>
+              <div className="glass-card overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="table-header">
+                    <tr><th className="px-4 py-3 text-left">Khách hàng</th><th className="px-4 py-3 text-left">Nhân viên</th><th className="px-4 py-3 text-left">Đánh giá</th><th className="px-4 py-3 text-left">Bình luận</th><th className="px-4 py-3 text-left">Ngày</th></tr>
+                  </thead>
+                  <tbody>
+                    {reviews.map(r => {
+                      const cust = customers.find(c => c.id === r.customerId);
+                      const emp = employees.find(e => e.id === r.employeeId);
+                      return (
+                        <tr key={r.id} className="table-row">
+                          <td className="px-4 py-3">{cust?.name}</td>
+                          <td className="px-4 py-3">{emp?.name}</td>
+                          <td className="px-4 py-3 text-yellow-400">{"⭐".repeat(r.rating)}</td>
+                          <td className="px-4 py-3 text-gray-400">{r.comment}</td>
+                          <td className="px-4 py-3 text-gray-500">{r.date}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </section>
           )}

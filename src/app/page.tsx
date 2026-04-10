@@ -2,8 +2,75 @@
 
 import { useState } from "react";
 
-type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "performance" | "customers" | "bookings" | "services" | "inventory" | "reviews";
+type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "performance" | "customers" | "bookings" | "services" | "inventory" | "reviews" | "accounts";
 type Role = "admin" | "manager" | "user";
+
+interface UserAccount {
+  id: number;
+  username: string;
+  password: string;
+  role: Role;
+  createdAt: string;
+}
+
+interface RoleConfig {
+  canAdd: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canViewReports: boolean;
+  canViewFinance: boolean;
+  canEditSalary: boolean;
+  tabs: Tab[];
+}
+
+const rolePermissions: Record<Role, RoleConfig> = {
+  admin: {
+    canAdd: true,
+    canEdit: true,
+    canDelete: true,
+    canViewReports: true,
+    canViewFinance: true,
+    canEditSalary: true,
+    tabs: ["employees", "departments", "contracts", "packages", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services", "inventory", "reviews", "accounts"],
+  },
+  manager: {
+    canAdd: true,
+    canEdit: true,
+    canDelete: false,
+    canViewReports: true,
+    canViewFinance: true,
+    canEditSalary: true,
+    tabs: ["employees", "contracts", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services", "accounts"],
+  },
+  user: {
+    canAdd: false,
+    canEdit: false,
+    canDelete: false,
+    canViewReports: false,
+    canViewFinance: false,
+    canEditSalary: false,
+    tabs: ["employees", "salary", "attendance", "performance", "reviews"],
+  },
+};
+
+interface Employee {
+  id: number;
+  name: string;
+  position: string;
+  phone: string;
+  startDate: string;
+  status: string;
+  department: string;
+  contractType: string;
+  skills: string[];
+}
+
+interface SalaryPackage {
+  id: number;
+  name: string;
+  percentage: number;
+  description: string;
+}
 
 interface Customer {
   id: number;
@@ -46,65 +113,6 @@ interface Review {
   rating: number;
   comment: string;
   date: string;
-}
-
-interface RoleConfig {
-  canAdd: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-  canViewReports: boolean;
-  canViewFinance: boolean;
-  canEditSalary: boolean;
-  tabs: Tab[];
-}
-
-const rolePermissions: Record<Role, RoleConfig> = {
-  admin: {
-    canAdd: true,
-    canEdit: true,
-    canDelete: true,
-    canViewReports: true,
-    canViewFinance: true,
-    canEditSalary: true,
-    tabs: ["employees", "departments", "contracts", "packages", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services", "inventory", "reviews"],
-  },
-  manager: {
-    canAdd: true,
-    canEdit: true,
-    canDelete: false,
-    canViewReports: true,
-    canViewFinance: true,
-    canEditSalary: true,
-    tabs: ["employees", "contracts", "salary", "attendance", "finance", "performance", "reports", "customers", "bookings", "services"],
-  },
-  user: {
-    canAdd: false,
-    canEdit: false,
-    canDelete: false,
-    canViewReports: false,
-    canViewFinance: false,
-    canEditSalary: false,
-    tabs: ["employees", "salary", "attendance", "performance", "reviews"],
-  },
-};
-
-interface Employee {
-  id: number;
-  name: string;
-  position: string;
-  phone: string;
-  startDate: string;
-  status: string;
-  department: string;
-  contractType: string;
-  skills: string[];
-}
-
-interface SalaryPackage {
-  id: number;
-  name: string;
-  percentage: number;
-  description: string;
 }
 
 interface Attendance {
@@ -176,6 +184,12 @@ const mockReviews: Review[] = [
   { id: 3, customerId: 3, employeeId: 1, rating: 5, comment: "Cảm ơn Thầy!", date: "2024-10-03" },
 ];
 
+const mockAccounts: UserAccount[] = [
+  { id: 1, username: "admin", password: "admin123", role: "admin", createdAt: "2024-01-01" },
+  { id: 2, username: "manager", password: "manager123", role: "manager", createdAt: "2024-02-01" },
+  { id: 3, username: "user", password: "user123", role: "user", createdAt: "2024-03-01" },
+];
+
 const mockAttendanceInit: Attendance[] = [
   { id: 1, employeeId: 1, date: "2024-10-01", checkIn: "08:00", checkOut: "17:00", status: "present" },
   { id: 2, employeeId: 2, date: "2024-10-01", checkIn: "08:00", checkOut: "17:00", status: "present" },
@@ -205,6 +219,7 @@ const menuItems = [
   { id: "services", label: "🔮 Dịch vụ", icon: "🔮" },
   { id: "inventory", label: "📦 Kho", icon: "📦" },
   { id: "reviews", label: "💬 Đánh giá", icon: "💬" },
+  { id: "accounts", label: "🔑 Tài khoản", icon: "🔑" },
 ];
 
 export default function Home() {
@@ -224,6 +239,10 @@ export default function Home() {
   const [services, setServices] = useState<Service[]>(mockServices);
   const [inventory, setInventory] = useState<InventoryItem[]>(mockInventory);
   const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [accounts, setAccounts] = useState<UserAccount[]>(mockAccounts);
+  const [loginError, setLoginError] = useState("");
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -258,6 +277,30 @@ export default function Home() {
   };
 
   const handleDeleteEmployee = (id: number) => setEmployees(employees.filter((e) => e.id !== id));
+
+  const handleLogin = () => {
+    const account = accounts.find(a => a.username === loginUsername && a.password === loginPassword);
+    if (account) {
+      setCurrentRole(account.role);
+      setShowLogin(false);
+      setLoginError("");
+      setLoginUsername("");
+      setLoginPassword("");
+    } else {
+      setLoginError("❌ Tên đăng nhập hoặc mật khẩu không đúng!");
+    }
+  };
+
+  const handleAddAccount = (username: string, password: string, role: Role) => {
+    if (!username || !password) return;
+    if (accounts.some(a => a.username === username)) {
+      alert("Tên đăng nhập đã tồn tại!");
+      return;
+    }
+    setAccounts([...accounts, { id: accounts.length + 1, username, password, role, createdAt: new Date().toISOString().split('T')[0] }]);
+  };
+
+  const handleDeleteAccount = (id: number) => setAccounts(accounts.filter(a => a.id !== id));
 
   const handleAddPackage = () => {
     if (!newPackage.name || !newPackage.percentage) return;
@@ -361,19 +404,34 @@ export default function Home() {
           
           <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>🗝️ Đăng nhập hệ thống - Chọn vai trò của bạn:</p>
           
-          <div className="grid grid-cols-1 gap-4 mb-8">
-            {roles.map((role) => (
-              <button 
-                key={role.id} 
-                onClick={() => { setCurrentRole(role.id as Role); setShowLogin(false); }} 
-                className={`w-full p-4 rounded-xl bg-gradient-to-r ${role.color} hover:opacity-90 transition-all transform hover:scale-105 text-white`}
-              >
-                <div className="text-2xl mb-1">{role.icon}</div>
-                <div className="text-lg font-bold">{role.name}</div>
-                <div className="text-xs opacity-80">{role.desc}</div>
-              </button>
-            ))}
+          <div className="space-y-4 mb-8">
+            <div>
+              <input type="text" placeholder="Tên đăng nhập" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className="form-input px-4 py-3 w-full" />
+            </div>
+            <div>
+              <input type="password" placeholder="Mật khẩu" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="form-input px-4 py-3 w-full" />
+            </div>
+            {loginError && <p className="text-red-400 text-sm">{loginError}</p>}
+            <button onClick={handleLogin} className="w-full btn-glow py-3 text-lg">🚀 Đăng nhập</button>
+            
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t" style={{ borderColor: darkMode ? '#333' : '#ddd' }}></div></div>
+              <div className="relative flex justify-center text-sm"><span className={`px-2 ${darkMode ? 'bg-[#12121a]' : 'bg-white'} ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>hoặc chọn nhanh</span></div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-2">
+              {roles.map((role) => (
+                <button 
+                  key={role.id} 
+                  onClick={() => { setCurrentRole(role.id as Role); setShowLogin(false); }} 
+                  className={`p-2 rounded-lg bg-gradient-to-r ${role.color} hover:opacity-90 text-white text-sm`}
+                >
+                  {role.icon} {role.name}
+                </button>
+              ))}
+            </div>
           </div>
+          <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Tài khoản mặc định: admin/admin123, manager/manager123, user/user123</p>
 
           <div className="flex justify-center gap-4 pt-4 border-t" style={{ borderColor: darkMode ? '#333' : '#ddd' }}>
             <button onClick={() => setDarkMode(!darkMode)} className={`text-sm ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
@@ -957,6 +1015,57 @@ export default function Home() {
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {selectedTab === "accounts" && (
+            <section className="animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-6">🔐 <span className="purple-gradient">Quản lý tài khoản</span></h2>
+              
+              <div className="glass-card p-6 mb-6">
+                <h3 className="font-semibold mb-4 gold-gradient">➕ Tạo tài khoản mới</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <input id="newUsername" type="text" placeholder="Tên đăng nhập" className="form-input px-4 py-3" />
+                  <input id="newPassword" type="password" placeholder="Mật khẩu" className="form-input px-4 py-3" />
+                  <select id="newRole" className="form-input px-4 py-3">
+                    <option value="user">User - Nhân viên</option>
+                    <option value="manager">Manager - Quản lý</option>
+                    <option value="admin">Admin - Quản trị</option>
+                  </select>
+                  <button onClick={() => {
+                    const username = (document.getElementById('newUsername') as HTMLInputElement).value;
+                    const password = (document.getElementById('newPassword') as HTMLInputElement).value;
+                    const role = (document.getElementById('newRole') as HTMLSelectElement).value as Role;
+                    handleAddAccount(username, password, role);
+                    (document.getElementById('newUsername') as HTMLInputElement).value = '';
+                    (document.getElementById('newPassword') as HTMLInputElement).value = '';
+                  }} className="btn-glow px-4 py-2">Tạo tài khoản</button>
+                </div>
+              </div>
+
+              <div className="glass-card overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="table-header">
+                    <tr><th className="px-4 py-3 text-left">Tên đăng nhập</th><th className="px-4 py-3 text-left">Vai trò</th><th className="px-4 py-3 text-left">Ngày tạo</th><th className="px-4 py-3 text-center">Thao tác</th></tr>
+                  </thead>
+                  <tbody>
+                    {accounts.map(acc => (
+                      <tr key={acc.id} className="table-row">
+                        <td className="px-4 py-3 font-medium">{acc.username}</td>
+                        <td className="px-4 py-3">
+                          <span className={`badge ${acc.role === 'admin' ? 'bg-red-500' : acc.role === 'manager' ? 'bg-blue-500' : 'bg-green-500'}`}>
+                            {acc.role === 'admin' ? '👑 Admin' : acc.role === 'manager' ? '🎯 Manager' : '👤 User'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-400">{acc.createdAt}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={() => handleDeleteAccount(acc.id)} className="text-red-400 hover:text-red-300">🗑️ Xóa</button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

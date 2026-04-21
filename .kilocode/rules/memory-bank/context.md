@@ -13,6 +13,9 @@
 - [x] Implemented modal forms for adding customers, bookings, and services
 - [x] Fixed critical bug: delete handlers for bookings and services (incorrect filter condition)
 - [x] Wired up all "Add" buttons (customers, bookings, services) to functional modals
+- [x] Implemented bcrypt password hashing for user accounts
+- [x] Added password visibility toggle in login form
+- [x] Added password confirmation and validation in account creation (min 6 chars)
 
 ## Current Structure
 
@@ -85,3 +88,4 @@ export async function GET() {
 |------|---------|
 | Initial | Template created with base setup |
 | 2026-04-21 | Fixed add button handlers, added modal forms for customers/bookings/services, corrected delete bugs in bookings/services |
+| 2026-04-21 | Implemented bcrypt password hashing, added password visibility toggle, account creation validation |

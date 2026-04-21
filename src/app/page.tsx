@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { hashPassword, verifyPassword } from "@/lib/password";
 
 type Tab = "employees" | "packages" | "salary" | "attendance" | "finance" | "reports" | "departments" | "contracts" | "performance" | "customers" | "bookings" | "services" | "inventory" | "reviews" | "accounts";
 type Role = "admin" | "manager" | "user";
@@ -8,7 +9,7 @@ type Role = "admin" | "manager" | "user";
 interface UserAccount {
   id: number;
   username: string;
-  password: string;
+  passwordHash: string;
   role: Role;
   createdAt: string;
 }
@@ -185,9 +186,9 @@ const mockReviews: Review[] = [
 ];
 
 const mockAccounts: UserAccount[] = [
-  { id: 1, username: "admin", password: "admin123", role: "admin", createdAt: "2024-01-01" },
-  { id: 2, username: "manager", password: "manager123", role: "manager", createdAt: "2024-02-01" },
-  { id: 3, username: "user", password: "user123", role: "user", createdAt: "2024-03-01" },
+  { id: 1, username: "admin", passwordHash: "$2b$10$ShWLy8wxYzg25vQVRNtPAeS85gfT3KaC1VzovCdJhokIKbdD.qtk2", role: "admin", createdAt: "2024-01-01" },
+  { id: 2, username: "manager", passwordHash: "$2b$10$nxwfidRpn2QSbvY0Srm28ua6ucO2xtu8JZAuXlejn.u9LxpQd1pw6", role: "manager", createdAt: "2024-02-01" },
+  { id: 3, username: "user", passwordHash: "$2b$10$vfI5MxYtS97nz28kY/EJ.OHpKKlL392vbBd/pxyOm7CuLfE38FRrC", role: "user", createdAt: "2024-03-01" },
 ];
 
 const mockAttendanceInit: Attendance[] = [
@@ -241,7 +242,8 @@ export default function Home() {
   const [accounts, setAccounts] = useState<UserAccount[]>(mockAccounts);
   const [loginError, setLoginError] = useState("");
   const [loginUsername, setLoginUsername] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
+   const [loginPassword, setLoginPassword] = useState("");
+   const [showLoginPassword, setShowLoginPassword] = useState(false);
   
   const [showAddForm, setShowAddForm] = useState(false);
    const [editingId, setEditingId] = useState<number | null>(null);
@@ -263,7 +265,10 @@ export default function Home() {
    const [newAttendance, setNewAttendance] = useState({ employeeId: 0, date: "", checkIn: "", checkOut: "", status: "present" as "present" | "absent" | "late" });
    const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", email: "", note: "" });
    const [newBooking, setNewBooking] = useState({ customerId: 0, employeeId: 0, service: "", date: "", time: "", status: "pending" as "pending" | "confirmed" | "completed" | "cancelled" });
-   const [newService, setNewService] = useState({ name: "", price: 0, duration: 0, description: "" });
+    const [newService, setNewService] = useState({ name: "", price: 0, duration: 0, description: "" });
+   const [newAccountPassword, setNewAccountPassword] = useState("");
+   const [confirmPassword, setConfirmPassword] = useState("");
+   const [passwordError, setPasswordError] = useState("");
 
   const handleAddEmployee = () => {
     if (!newEmployee.name || !newEmployee.position) return;
@@ -283,27 +288,28 @@ export default function Home() {
 
   const handleDeleteEmployee = (id: number) => setEmployees(employees.filter((e) => e.id !== id));
 
-  const handleLogin = () => {
-    const account = accounts.find(a => a.username === loginUsername && a.password === loginPassword);
-    if (account) {
-      setCurrentRole(account.role);
-      setShowLogin(false);
-      setLoginError("");
-      setLoginUsername("");
-      setLoginPassword("");
-    } else {
-      setLoginError("❌ Tên đăng nhập hoặc mật khẩu không đúng!");
-    }
-  };
+   const handleLogin = async () => {
+     const account = accounts.find(a => a.username === loginUsername);
+     if (account && await verifyPassword(loginPassword, account.passwordHash)) {
+       setCurrentRole(account.role);
+       setShowLogin(false);
+       setLoginError("");
+       setLoginUsername("");
+       setLoginPassword("");
+     } else {
+       setLoginError("❌ Tên đăng nhập hoặc mật khẩu không đúng!");
+     }
+   };
 
-  const handleAddAccount = (username: string, password: string, role: Role) => {
-    if (!username || !password) return;
-    if (accounts.some(a => a.username === username)) {
-      alert("Tên đăng nhập đã tồn tại!");
-      return;
-    }
-    setAccounts([...accounts, { id: accounts.length + 1, username, password, role, createdAt: new Date().toISOString().split('T')[0] }]);
-  };
+   const handleAddAccount = async (username: string, password: string, role: Role) => {
+     if (!username || !password) return;
+     if (accounts.some(a => a.username === username)) {
+       alert("Tên đăng nhập đã tồn tại!");
+       return;
+     }
+     const passwordHash = await hashPassword(password);
+     setAccounts([...accounts, { id: accounts.length + 1, username, passwordHash, role, createdAt: new Date().toISOString().split('T')[0] }]);
+   };
 
   const handleDeleteAccount = (id: number) => setAccounts(accounts.filter(a => a.id !== id));
 
@@ -431,9 +437,14 @@ export default function Home() {
             <div>
               <input type="text" placeholder="Tên đăng nhập" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className="form-input px-4 py-3 w-full" />
             </div>
-            <div>
-              <input type="password" placeholder="Mật khẩu" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="form-input px-4 py-3 w-full" />
-            </div>
+             <div>
+               <div className="relative">
+                 <input type={showLoginPassword ? "text" : "password"} placeholder="Mật khẩu" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="form-input px-4 py-3 w-full pr-12" />
+                 <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-lg hover:opacity-70">
+                   {showLoginPassword ? "🙈" : "👁️"}
+                 </button>
+               </div>
+             </div>
             {loginError && <p className="text-red-400 text-sm">{loginError}</p>}
             <button onClick={handleLogin} className="w-full btn-glow py-3 text-lg">🚀 Đăng nhập</button>
             
@@ -1081,26 +1092,38 @@ export default function Home() {
             <section className="animate-fade-in">
               <h2 className="text-2xl font-semibold mb-6">🔐 <span className="purple-gradient">Quản lý tài khoản</span></h2>
               
-              <div className="glass-card p-6 mb-6">
-                <h3 className="font-semibold mb-4 gold-gradient">➕ Tạo tài khoản mới</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <input id="newUsername" type="text" placeholder="Tên đăng nhập" className="form-input px-4 py-3" />
-                  <input id="newPassword" type="password" placeholder="Mật khẩu" className="form-input px-4 py-3" />
-                  <select id="newRole" className="form-input px-4 py-3">
-                    <option value="user">User - Nhân viên</option>
-                    <option value="manager">Manager - Quản lý</option>
-                    <option value="admin">Admin - Quản trị</option>
-                  </select>
-                  <button onClick={() => {
-                    const username = (document.getElementById('newUsername') as HTMLInputElement).value;
-                    const password = (document.getElementById('newPassword') as HTMLInputElement).value;
-                    const role = (document.getElementById('newRole') as HTMLSelectElement).value as Role;
-                    handleAddAccount(username, password, role);
-                    (document.getElementById('newUsername') as HTMLInputElement).value = '';
-                    (document.getElementById('newPassword') as HTMLInputElement).value = '';
-                  }} className="btn-glow px-4 py-2">Tạo tài khoản</button>
-                </div>
-              </div>
+               <div className="glass-card p-6 mb-6">
+                 <h3 className="font-semibold mb-4 gold-gradient">➕ Tạo tài khoản mới</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                   <input id="newUsername" type="text" placeholder="Tên đăng nhập" className="form-input px-4 py-3" />
+                   <input id="newPassword" type="password" placeholder="Mật khẩu" value={newAccountPassword} onChange={(e) => setNewAccountPassword(e.target.value)} className="form-input px-4 py-3" />
+                   <input type="password" placeholder="Xác nhận mật khẩu" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="form-input px-4 py-3" />
+                   <select id="newRole" className="form-input px-4 py-3">
+                     <option value="user">User - Nhân viên</option>
+                     <option value="manager">Manager - Quản lý</option>
+                     <option value="admin">Admin - Quản trị</option>
+                   </select>
+                 </div>
+                 {passwordError && <p className="text-red-400 text-sm mt-2">{passwordError}</p>}
+                 <button onClick={async () => {
+                   const username = (document.getElementById('newUsername') as HTMLInputElement).value;
+                   const password = newAccountPassword;
+                   const role = (document.getElementById('newRole') as HTMLSelectElement).value as Role;
+                   if (password !== confirmPassword) {
+                     setPasswordError("❌ Mật khẩu xác nhận không khớp!");
+                     return;
+                   }
+                   if (password.length < 6) {
+                     setPasswordError("❌ Mật khẩu phải có ít nhất 6 ký tự!");
+                     return;
+                   }
+                   await handleAddAccount(username, password, role);
+                   setNewAccountPassword("");
+                   setConfirmPassword("");
+                   setPasswordError("");
+                   (document.getElementById('newUsername') as HTMLInputElement).value = '';
+                 }} className="btn-glow px-4 py-2 mt-3">Tạo tài khoản</button>
+               </div>
 
               <div className="glass-card overflow-hidden">
                 <table className="w-full text-sm">

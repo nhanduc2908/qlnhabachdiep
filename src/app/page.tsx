@@ -244,11 +244,14 @@ export default function Home() {
   const [loginPassword, setLoginPassword] = useState("");
   
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [showPackageForm, setShowPackageForm] = useState(false);
-  const [showFinanceForm, setShowFinanceForm] = useState(false);
-  const [showDeptForm, setShowDeptForm] = useState(false);
-  const [showAttendanceForm, setShowAttendanceForm] = useState(false);
+   const [editingId, setEditingId] = useState<number | null>(null);
+   const [showPackageForm, setShowPackageForm] = useState(false);
+   const [showFinanceForm, setShowFinanceForm] = useState(false);
+   const [showDeptForm, setShowDeptForm] = useState(false);
+   const [showAttendanceForm, setShowAttendanceForm] = useState(false);
+   const [showCustomerForm, setShowCustomerForm] = useState(false);
+   const [showBookingForm, setShowBookingForm] = useState(false);
+   const [showServiceForm, setShowServiceForm] = useState(false);
   
   const [newEmployee, setNewEmployee] = useState({
     name: "", position: "", phone: "", startDate: "", department: "", contractType: "", skills: [] as string[],
@@ -257,7 +260,10 @@ export default function Home() {
   const [newPackage, setNewPackage] = useState({ name: "", percentage: 0, description: "" });
   const [newFinance, setNewFinance] = useState({ type: "income" as "income" | "expense", amount: 0, description: "", date: "" });
   const [newDept, setNewDept] = useState("");
-  const [newAttendance, setNewAttendance] = useState({ employeeId: 0, date: "", checkIn: "", checkOut: "", status: "present" as "present" | "absent" | "late" });
+   const [newAttendance, setNewAttendance] = useState({ employeeId: 0, date: "", checkIn: "", checkOut: "", status: "present" as "present" | "absent" | "late" });
+   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", email: "", note: "" });
+   const [newBooking, setNewBooking] = useState({ customerId: 0, employeeId: 0, service: "", date: "", time: "", status: "pending" as "pending" | "confirmed" | "completed" | "cancelled" });
+   const [newService, setNewService] = useState({ name: "", price: 0, duration: 0, description: "" });
 
   const handleAddEmployee = () => {
     if (!newEmployee.name || !newEmployee.position) return;
@@ -338,30 +344,48 @@ export default function Home() {
     setDepartments(departments.filter(d => d !== dept));
   };
 
-  const handleAddAttendance = () => {
-    if (!newAttendance.employeeId || !newAttendance.date) return;
-    const id = Math.max(...attendance.map(a => a.id), 0) + 1;
-    setAttendance([...attendance, { ...newAttendance, id }]);
-    setNewAttendance({ employeeId: 0, date: "", checkIn: "", checkOut: "", status: "present" });
-    setShowAttendanceForm(false);
-  };
+   const handleAddAttendance = () => {
+     if (!newAttendance.employeeId || !newAttendance.date) return;
+     const id = Math.max(...attendance.map(a => a.id), 0) + 1;
+     setAttendance([...attendance, { ...newAttendance, id }]);
+     setNewAttendance({ employeeId: 0, date: "", checkIn: "", checkOut: "", status: "present" });
+     setShowAttendanceForm(false);
+   };
+
+   const handleAddCustomer = () => {
+     if (!newCustomer.name || !newCustomer.phone) return;
+     const id = Math.max(...customers.map(c => c.id), 0) + 1;
+     setCustomers([...customers, { ...newCustomer, id, createdAt: new Date().toISOString().split('T')[0] }]);
+     setNewCustomer({ name: "", phone: "", email: "", note: "" });
+     setShowCustomerForm(false);
+   };
+
+   const handleAddBooking = () => {
+     if (!newBooking.customerId || !newBooking.employeeId || !newBooking.service || !newBooking.date || !newBooking.time) return;
+     const id = Math.max(...bookings.map(b => b.id), 0) + 1;
+     setBookings([...bookings, { ...newBooking, id }]);
+     setNewBooking({ customerId: 0, employeeId: 0, service: "", date: "", time: "", status: "pending" });
+     setShowBookingForm(false);
+   };
+
+   const handleAddService = () => {
+     if (!newService.name || !newService.price) return;
+     const id = Math.max(...services.map(s => s.id), 0) + 1;
+     setServices([...services, { ...newService, id }]);
+     setNewService({ name: "", price: 0, duration: 0, description: "" });
+     setShowServiceForm(false);
+   };
 
   const handleDeleteAttendance = (id: number) => setAttendance(attendance.filter(a => a.id !== id));
 
-  const handleAddCustomer = (customer: Omit<Customer, "id">) => {
-    setCustomers([...customers, { ...customer, id: customers.length + 1 }]);
-  };
-  const handleDeleteCustomer = (id: number) => setCustomers(customers.filter(c => c.id !== id));
-  
-  const handleAddBooking = (booking: Omit<Booking, "id">) => {
-    setBookings([...bookings, { ...booking, id: bookings.length + 1 }]);
-  };
-  const handleDeleteBooking = (id: number) => setBookings(bookings.filter(b => b.id !== id));
-  
-  const handleAddService = (service: Omit<Service, "id">) => {
-    setServices([...services, { ...service, id: services.length + 1 }]);
-  };
-  const handleDeleteService = (id: number) => setServices(services.filter(s => s.id !== id));
+
+   const handleDeleteCustomer = (id: number) => setCustomers(customers.filter(c => c.id !== id));
+
+
+   const handleDeleteBooking = (id: number) => setBookings(bookings.filter(b => b.id !== id));
+
+
+   const handleDeleteService = (id: number) => setServices(services.filter(s => s.id !== id));
   
   const handleUpdateInventory = (id: number, qty: number) => {
     setInventory(inventory.map(i => i.id === id ? { ...i, quantity: qty } : i));
@@ -893,13 +917,28 @@ export default function Home() {
             </section>
           )}
 
-          {selectedTab === "customers" && permissions?.canAdd && (
-            <section className="animate-fade-in">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">🤝 <span className="purple-gradient">Khách hàng</span></h2>
-                <button onClick={() => {}} className="btn-glow px-4 py-2 text-sm">+ Thêm KH</button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+           {selectedTab === "customers" && permissions?.canAdd && (
+             <section className="animate-fade-in">
+               <div className="flex justify-between items-center mb-6">
+                 <h2 className="text-2xl font-semibold">🤝 <span className="purple-gradient">Khách hàng</span></h2>
+                 <button onClick={() => setShowCustomerForm(true)} className="btn-glow px-4 py-2 text-sm">+ Thêm KH</button>
+               </div>
+               {showCustomerForm && (
+                 <div className="glass-card p-6 mb-6 animate-fade-in">
+                   <h3 className="font-semibold mb-4 gold-gradient text-lg">➕ Thêm khách hàng mới</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <input type="text" placeholder="Họ tên" value={newCustomer.name} onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })} className="form-input px-4 py-3" />
+                     <input type="text" placeholder="Số điện thoại" value={newCustomer.phone} onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })} className="form-input px-4 py-3" />
+                     <input type="email" placeholder="Email" value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} className="form-input px-4 py-3" />
+                     <input type="text" placeholder="Ghi chú" value={newCustomer.note} onChange={(e) => setNewCustomer({ ...newCustomer, note: e.target.value })} className="form-input px-4 py-3" />
+                   </div>
+                   <div className="flex gap-3 mt-5">
+                     <button onClick={handleAddCustomer} className="btn-glow px-6 py-2.5">💾 Lưu</button>
+                     <button onClick={() => setShowCustomerForm(false)} className="btn-outline px-6 py-2.5">Huỷ</button>
+                   </div>
+                 </div>
+               )}
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {customers.map(c => (
                   <div key={c.id} className="stat-card p-5">
                     <div className="font-semibold text-lg">{c.name}</div>
@@ -916,9 +955,37 @@ export default function Home() {
             <section className="animate-fade-in">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-semibold">📅 <span className="purple-gradient">Đặt lịch</span></h2>
-                <button onClick={() => {}} className="btn-glow px-4 py-2 text-sm">+ Thêm đặt lịch</button>
-              </div>
-              <div className="glass-card overflow-hidden">
+                 <button onClick={() => setShowBookingForm(true)} className="btn-glow px-4 py-2 text-sm">+ Thêm đặt lịch</button>
+               </div>
+               {showBookingForm && (
+                 <div className="glass-card p-6 mb-6 animate-fade-in">
+                   <h3 className="font-semibold mb-4 gold-gradient text-lg">➕ Thêm đặt lịch mới</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <select value={newBooking.customerId} onChange={(e) => setNewBooking({ ...newBooking, customerId: Number(e.target.value) })} className="form-input px-4 py-3">
+                       <option value={0}>Chọn khách hàng</option>
+                       {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                     </select>
+                     <select value={newBooking.employeeId} onChange={(e) => setNewBooking({ ...newBooking, employeeId: Number(e.target.value) })} className="form-input px-4 py-3">
+                       <option value={0}>Chọn nhân viên</option>
+                       {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                     </select>
+                     <input type="text" placeholder="Dịch vụ" value={newBooking.service} onChange={(e) => setNewBooking({ ...newBooking, service: e.target.value })} className="form-input px-4 py-3" />
+                     <input type="date" value={newBooking.date} onChange={(e) => setNewBooking({ ...newBooking, date: e.target.value })} className="form-input px-4 py-3" />
+                     <input type="time" value={newBooking.time} onChange={(e) => setNewBooking({ ...newBooking, time: e.target.value })} className="form-input px-4 py-3" />
+                     <select value={newBooking.status} onChange={(e) => setNewBooking({ ...newBooking, status: e.target.value as any })} className="form-input px-4 py-3">
+                       <option value="pending">Chờ</option>
+                       <option value="confirmed">Xác nhận</option>
+                       <option value="completed">Hoàn thành</option>
+                       <option value="cancelled">Hủy</option>
+                     </select>
+                   </div>
+                   <div className="flex gap-3 mt-5">
+                     <button onClick={handleAddBooking} className="btn-glow px-6 py-2.5">💾 Lưu</button>
+                     <button onClick={() => setShowBookingForm(false)} className="btn-outline px-6 py-2.5">Huỷ</button>
+                   </div>
+                 </div>
+               )}
+               <div className="glass-card overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="table-header">
                     <tr><th className="px-4 py-3 text-left">KH</th><th className="px-4 py-3 text-left">NV</th><th className="px-4 py-3 text-left">Dịch vụ</th><th className="px-4 py-3 text-left">Ngày</th><th className="px-4 py-3 text-left">Giờ</th><th className="px-4 py-3 text-left">TT</th></tr>
@@ -948,13 +1015,28 @@ export default function Home() {
             </section>
           )}
 
-          {selectedTab === "services" && permissions?.canAdd && (
-            <section className="animate-fade-in">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">🔮 <span className="purple-gradient">Dịch vụ</span></h2>
-                <button onClick={() => {}} className="btn-glow px-4 py-2 text-sm">+ Thêm DV</button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+           {selectedTab === "services" && permissions?.canAdd && (
+             <section className="animate-fade-in">
+               <div className="flex justify-between items-center mb-6">
+                 <h2 className="text-2xl font-semibold">🔮 <span className="purple-gradient">Dịch vụ</span></h2>
+                 <button onClick={() => setShowServiceForm(true)} className="btn-glow px-4 py-2 text-sm">+ Thêm DV</button>
+               </div>
+               {showServiceForm && (
+                 <div className="glass-card p-6 mb-6 animate-fade-in">
+                   <h3 className="font-semibold mb-4 gold-gradient text-lg">➕ Thêm dịch vụ mới</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <input type="text" placeholder="Tên dịch vụ" value={newService.name} onChange={(e) => setNewService({ ...newService, name: e.target.value })} className="form-input px-4 py-3" />
+                     <input type="number" placeholder="Giá (VNĐ)" value={newService.price || ""} onChange={(e) => setNewService({ ...newService, price: Number(e.target.value) })} className="form-input px-4 py-3" />
+                     <input type="number" placeholder="Thời gian (phút)" value={newService.duration || ""} onChange={(e) => setNewService({ ...newService, duration: Number(e.target.value) })} className="form-input px-4 py-3" />
+                     <input type="text" placeholder="Mô tả" value={newService.description} onChange={(e) => setNewService({ ...newService, description: e.target.value })} className="form-input px-4 py-3" />
+                   </div>
+                   <div className="flex gap-3 mt-5">
+                     <button onClick={handleAddService} className="btn-glow px-6 py-2.5">💾 Lưu</button>
+                     <button onClick={() => setShowServiceForm(false)} className="btn-outline px-6 py-2.5">Huỷ</button>
+                   </div>
+                 </div>
+               )}
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {services.map(s => (
                   <div key={s.id} className="stat-card p-5">
                     <div className="font-semibold text-lg">{s.name}</div>
